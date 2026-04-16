@@ -1,0 +1,8 @@
+fastapi
+sqlalchemy
+passlib[bcrypt]
+python-multipart
+python-jose[cryptography]
+python-dotenv
+sqlalchemy.orm
+openai
