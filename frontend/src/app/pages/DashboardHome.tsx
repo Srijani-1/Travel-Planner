@@ -1,4 +1,4 @@
-git add frontend/src/app/pages/DashboardHome.tsxtypeimport { Button } from "../components/ui/button";
+import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Plus, TrendingUp, CheckCircle2, Bookmark } from "lucide-react";
 import { motion } from "motion/react";
@@ -76,14 +76,14 @@ export function DashboardHome() {
                         whileHover={{ scale: 1.02, y: -4 }}
                     >
                         <Card className="relative overflow-hidden">
-                            <div className={absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-5 transition-opacity} />
+                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
                             <CardContent className="pt-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
                                         <p className="text-3xl font-bold">{stat.value}</p>
                                     </div>
-                                    <div className={p-3 rounded-xl bg-gradient-to-br ${stat.gradient}}>
+                                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient}`}>
                                         <stat.icon className="h-6 w-6 text-white" />
                                     </div>
                                 </div>
