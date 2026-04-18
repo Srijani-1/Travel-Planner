@@ -4,5 +4,7 @@ passlib[bcrypt]
 python-multipart
 python-jose[cryptography]
 python-dotenv
-sqlalchemy.orm
 openai
+pydantic
+fastapi-mail
+uvicorn
