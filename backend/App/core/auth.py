@@ -1,26 +1,35 @@
 from jose import jwt, JWTError
-from datetime import datetime,timedelta
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from .. import models
 from ..database import get_db
 from sqlalchemy.orm import Session
+import os
 
-
-SECRET_KEY = "81ab2acdce9dc6d8e8c5926b887d89a479b1c2197c9cd8848d533ca487864733"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 50
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+security = HTTPBearer(auto_error=True)
 
-def generate_token(data:dict):
+def generate_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp":expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm = ALGORITHM)
-    return encoded_jwt
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    if "sub" not in to_encode:
+        raise ValueError("Token must include 'sub'")
+
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    token = credentials.credentials
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -29,13 +38,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        email = payload.get("sub")
+
+        if not email or not isinstance(email, str):
             raise credentials_exception
+
     except JWTError:
         raise credentials_exception
 
     user = db.query(models.User).filter(models.User.email == email).first()
+
     if user is None:
         raise credentials_exception
 
