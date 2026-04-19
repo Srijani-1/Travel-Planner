@@ -1,26 +1,33 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
+load_dotenv()
 
-# ✅ Use environment variable or fallback to default SQLite
-DB_URL = os.getenv(
-    "DATABASE_URL",
-    r"sqlite:///./travelai.db"
+DB_URL = os.getenv("DATABASE_URL", "sqlite:///./travelai.db")
+
+connect_args = {}
+
+if DB_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+elif DB_URL.startswith("postgresql"):
+    connect_args = {"sslmode": "require"}
+
+engine = create_engine(
+    DB_URL,
+    connect_args={
+        **connect_args,
+        "sslmode": "require"
+    },
+    pool_pre_ping=True
 )
 
-# ✅ For SQLite we need "check_same_thread"
-connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
-
-engine = create_engine(DB_URL, connect_args=connect_args)
-
-# ✅ Print which DB is being used (debugging)
-print("📦 Using DB file at:", os.path.abspath(DB_URL.replace("sqlite:///", "")))
+print("📦 Using DB:", DB_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# Dependency for FastAPI routes
 def get_db():
     db = SessionLocal()
     try:

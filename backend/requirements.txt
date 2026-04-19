@@ -8,3 +8,4 @@ openai
 pydantic
 fastapi-mail
 uvicorn
+psycopg2-binary
