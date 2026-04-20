@@ -4,6 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
+import { OTPVerify } from "./pages/OTPVerify";
 
 export const router = createBrowserRouter([
     {
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
     {
         path: "/register",
         Component: RegisterPage,
+    },
+    {
+        path: "/verify-otp",
+        Component: OTPVerify,
     },
     {
         path: "/dashboard",
