@@ -4,7 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
-import { OTPVerify } from "./pages/OTPVerify";
+import { OTPVerify } from "./pages/OTPverify";
 
 export const router = createBrowserRouter([
     {
