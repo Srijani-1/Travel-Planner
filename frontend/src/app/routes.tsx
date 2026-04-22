@@ -11,6 +11,7 @@ import { Profile } from "./pages/Profile";
 import { ItineraryResult } from "./pages/ItineraryResult";
 import { Safety } from "./pages/Safety";
 import SafeRide from "./pages/SafeRide";
+import { MyTrips } from "./pages/MyTrips";
 import SafeStays from "./pages/SafeStays";
 
 export const router = createBrowserRouter([
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
             { path: "safe-ride", Component: SafeRide },
             { path: "safe-stays", Component: SafeStays },
             { path: "settings", Component: Settings },
+            { path: "my-trips", Component: MyTrips },
         ]
     }
 ]);
