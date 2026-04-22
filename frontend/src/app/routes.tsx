@@ -7,6 +7,7 @@ import { DashboardHome } from "./pages/DashboardHome";
 import { OTPVerify } from "./pages/OTPverify";
 import { PlanTrip } from "./pages/PlanTrip";
 import { Profile } from "./pages/Profile";
+import { ItineraryResult } from "./pages/ItineraryResult";
 
 export const router = createBrowserRouter([
     {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
             { index: true, Component: DashboardHome },
             { path: "plan-trip", Component: PlanTrip },
             { path: "profile", Component: Profile },
+            { path: "itinerary/:id", Component: ItineraryResult },
         ]
     }
 ]);
