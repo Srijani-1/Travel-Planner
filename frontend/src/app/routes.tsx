@@ -6,6 +6,7 @@ import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
 import { OTPVerify } from "./pages/OTPverify";
 import { PlanTrip } from "./pages/PlanTrip";
+import { Settings } from "./pages/Settings";
 import { Profile } from "./pages/Profile";
 import { ItineraryResult } from "./pages/ItineraryResult";
 import { Safety } from "./pages/Safety";
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
             { path: "safety", Component: Safety },
             { path: "safe-ride", Component: SafeRide },
             { path: "safe-stays", Component: SafeStays },
+            { path: "settings", Component: Settings },
         ]
     }
 ]);
