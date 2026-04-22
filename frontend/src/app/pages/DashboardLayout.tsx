@@ -3,7 +3,7 @@ import { Button } from "../components/ui/button";
 import {
   LayoutDashboard, MapPin, Briefcase, Bookmark,
   Shield, User, Home, LogOut, Settings as SettingsIcon,
-  Map, Car, BedDouble, Menu, X,
+  Map, Car, BedDouble, Menu, X, Phone
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -22,14 +22,15 @@ export function DashboardLayout() {
     { icon: Shield, label: "Safety", path: "/dashboard/safety" },
     { icon: Car, label: "Safe Rides", path: "/dashboard/safe-ride" },
     { icon: BedDouble, label: "Safe Stays", path: "/dashboard/safe-stays" },
+    { icon: Phone, label: "Emergency Contacts", path: "/dashboard/emergency-contacts" },
     { icon: User, label: "Profile", path: "/dashboard/profile" },
     { icon: SettingsIcon, label: "Settings", path: "/dashboard/settings" },
   ];
 
   // Group items so women-safety items are visually separated
   const mainItems = menuItems.slice(0, 5);
-  const womenItems = menuItems.slice(5, 7);
-  const bottomItems = menuItems.slice(7);
+  const womenItems = menuItems.slice(5, 8);
+  const bottomItems = menuItems.slice(8);
 
   const isActive = (path: string) =>
     path === "/dashboard"
@@ -53,7 +54,7 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:to-primary/10 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:to-primary/10 relative">
       {/* Background orbs */}
       <div className="fixed top-1/4 -left-1/4 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[128px] pointer-events-none mix-blend-screen" />
       <div className="fixed bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[128px] pointer-events-none mix-blend-screen" />
