@@ -195,7 +195,7 @@ export function RegisterPage() {
                 <span className="text-slate-900 dark:text-white font-semibold text-lg">Travel AI</span>
               </div>
 
-              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">Create your account</h1>
+              <h1>Create account</h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm mb-7">Start planning amazing trips today</p>
 
               <form onSubmit={handleRegister} className="space-y-3.5">

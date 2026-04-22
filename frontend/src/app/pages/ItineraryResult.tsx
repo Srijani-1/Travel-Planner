@@ -419,7 +419,7 @@ function SectionHeader({ icon, title, subtitle, accent = "pink" }: {
         {icon}
       </div>
       <div>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="text-xl">{title}</h2>
         {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -599,7 +599,7 @@ export function ItineraryResult() {
                 {content.total_days} Days
               </Badge>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-4xl lg:text-7xl">
               Adventure in{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-indigo-600 dark:from-pink-400 dark:to-indigo-400">
                 {content.destination}
