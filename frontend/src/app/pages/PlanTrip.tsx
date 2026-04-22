@@ -613,7 +613,7 @@ export function PlanTrip() {
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Plan Your Trip</h1>
+        <h1>Plan Your Trip</h1>
         <p className="text-gray-600">Let's create your perfect itinerary in a few simple steps</p>
       </div>
 

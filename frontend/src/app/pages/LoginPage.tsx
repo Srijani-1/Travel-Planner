@@ -203,7 +203,7 @@ export function LoginPage() {
                                 <span className="text-slate-900 dark:text-white font-semibold text-lg">Travel AI</span>
                             </div>
 
-                            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">Welcome back</h1>
+                            <h1>Welcome back</h1>
                             <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Log in to continue your journey</p>
 
                             {/* ── Google button — in JSX, inside return ── */}

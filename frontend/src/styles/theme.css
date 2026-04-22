@@ -124,10 +124,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: 'Outfit', sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Outfit', sans-serif;
   }
 
   /**
@@ -140,44 +142,43 @@
   }
 
   h1 {
+    @apply font-black tracking-tighter uppercase italic;
     font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
     line-height: 1.5;
   }
 
   h2 {
+    @apply font-black tracking-tight uppercase;
     font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
     line-height: 1.5;
   }
 
   h3 {
+    @apply font-bold tracking-tight;
     font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
     line-height: 1.5;
   }
 
   h4 {
+    @apply font-bold;
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
     line-height: 1.5;
   }
 
   label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    @apply font-bold uppercase tracking-widest text-[10px];
     line-height: 1.5;
   }
 
   button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    @apply font-black uppercase tracking-widest;
+    font-size: var(--text-sm);
     line-height: 1.5;
   }
 
   input {
+    @apply font-bold;
     font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
 }

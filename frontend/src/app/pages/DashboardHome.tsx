@@ -134,7 +134,7 @@ export function DashboardHome() {
             {/* ── Header ── */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <h1 className="text-3xl font-bold">Hello, Traveler 👋</h1>
+                    <h1 className="text-4xl italic">Hello, Traveler 👋</h1>
                     <p className="text-muted-foreground mt-1">Ready to plan your next adventure?</p>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.1 }}>
@@ -179,7 +179,7 @@ export function DashboardHome() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="mb-8"
             >
-                <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+                <h2 className="text-xl mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {quickActions.map((action, i) => (
                         <motion.button
@@ -211,7 +211,7 @@ export function DashboardHome() {
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.35 }}
                 >
-                    <h2 className="text-xl font-bold mb-4">Upcoming Trips</h2>
+                    <h2 className="text-xl mb-4">Upcoming Schedule</h2>
                     <div className="flex flex-col gap-3">
                         {upcomingTrips.map((trip, i) => (
                             <Card
@@ -281,7 +281,7 @@ export function DashboardHome() {
                 transition={{ duration: 0.5, delay: 0.45 }}
             >
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold mb-1">Recommended for You</h2>
+                    <h2 className="text-xl mb-4">Recommended for You</h2>
                     <p className="text-muted-foreground text-sm">Based on your travel history and preferences</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
