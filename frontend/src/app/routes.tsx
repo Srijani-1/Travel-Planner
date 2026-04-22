@@ -5,6 +5,7 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
 import { OTPVerify } from "./pages/OTPverify";
+import { PlanTrip } from "./pages/PlanTrip";
 import { Profile } from "./pages/Profile";
 
 export const router = createBrowserRouter([
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
             { index: true, Component: DashboardHome },
+            { path: "plan-trip", Component: PlanTrip },
             { path: "profile", Component: Profile },
         ]
     }
