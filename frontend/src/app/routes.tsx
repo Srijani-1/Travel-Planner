@@ -4,16 +4,16 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
-import { OTPVerify } from "./pages/OTPverify";
 import { PlanTrip } from "./pages/PlanTrip";
-import { Settings } from "./pages/Settings";
-import { Profile } from "./pages/Profile";
-import { ItineraryResult } from "./pages/ItineraryResult";
-import { Safety } from "./pages/Safety";
-import SafeRide from "./pages/SafeRide";
 import { MyTrips } from "./pages/MyTrips";
-import SafeStays from "./pages/SafeStays";
+import { Safety } from "./pages/Safety";
+import { Profile } from "./pages/Profile";
+import { Settings } from "./pages/Settings";
+import { ItineraryResult } from "./pages/ItineraryResult";
+import SafeRide from './pages/SafeRide';
+import SafeStays from './pages/SafeStays';
 import EmergencyContacts from './pages/EmergencyContacts';
+import { Community } from './pages/Community';
 
 export const router = createBrowserRouter([
     {
@@ -29,24 +29,21 @@ export const router = createBrowserRouter([
         Component: RegisterPage,
     },
     {
-        path: "/verify-otp",
-        Component: OTPVerify,
-    },
-    {
         path: "/dashboard",
         Component: DashboardLayout,
         children: [
             { index: true, Component: DashboardHome },
             { path: "plan-trip", Component: PlanTrip },
+            { path: "my-trips", Component: MyTrips },
+            { path: "safety", Component: Safety },
             { path: "profile", Component: Profile },
+            { path: "settings", Component: Settings },
             { path: "itinerary/:id", Component: ItineraryResult },
             { path: "trips/:id", Component: ItineraryResult },
-            { path: "safety", Component: Safety },
             { path: "safe-ride", Component: SafeRide },
             { path: "safe-stays", Component: SafeStays },
-            { path: "settings", Component: Settings },
-            { path: "my-trips", Component: MyTrips },
             { path: "emergency-contacts", Component: EmergencyContacts },
-        ]
-    }
+            { path: "community", Component: Community },
+        ],
+    },
 ]);

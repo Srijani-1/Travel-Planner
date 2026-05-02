@@ -6,7 +6,7 @@ import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Calendar, MapPin, DollarSign, Eye, XCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ImageWithFallback";
 import { toast } from "sonner";
 import { useDestinationImage } from "../../hooks/useDestinationImage";
 import {
@@ -32,124 +32,124 @@ interface Trip {
   days_left?: number;
 }
 
-const TripCard = ({ trip, isPast, onView, onUpdateStatus, onCancel }: { 
-    trip: Trip; 
-    isPast: boolean;
-    onView: (id: number) => void;
-    onUpdateStatus: (id: number, status: string) => void;
-    onCancel: (id: number) => void;
+const TripCard = ({ trip, isPast, onView, onUpdateStatus, onCancel }: {
+  trip: Trip;
+  isPast: boolean;
+  onView: (id: number) => void;
+  onUpdateStatus: (id: number, status: string) => void;
+  onCancel: (id: number) => void;
 }) => {
   const { src, loading } = useDestinationImage(
     trip.destination_name,
     "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800"
   );
-  
+
   return (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-  >
-    <Card className="overflow-hidden hover:shadow-lg transition-all border-slate-200 dark:border-white/10 group bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-      <div className="grid md:grid-cols-3 gap-0">
-        <div className="relative h-48 md:h-auto overflow-hidden">
-          {loading && (
-            <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse z-10" />
-          )}
-          <ImageWithFallback
-            src={src}
-            alt={trip.destination_name}
-            className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
-          />
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <Badge className="shadow-lg font-bold" variant={isPast ? "secondary" : "default"}>
-              {isPast ? "COMPLETED" : trip.status === "next" ? "★ NEXT TRIP" : "PLANNED"}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="md:col-span-2 p-6 flex flex-col justify-between">
-          <div>
-            <CardHeader className="p-0 mb-4">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white capitalize">
-                  {trip.destination_name}
-                </CardTitle>
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 font-medium">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-pink-500" />
-                  <span>
-                    {new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-lg text-emerald-600 dark:text-emerald-400">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="font-bold tracking-tight">₹{trip.budget?.toLocaleString()}</span>
-                </div>
-              </div>
-            </CardHeader>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-all border-slate-200 dark:border-white/10 group bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
+        <div className="grid md:grid-cols-3 gap-0">
+          <div className="relative h-48 md:h-auto overflow-hidden">
+            {loading && (
+              <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse z-10" />
+            )}
+            <ImageWithFallback
+              src={src}
+              alt={trip.destination_name}
+              className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+            />
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              <Badge className="shadow-lg font-bold" variant={isPast ? "secondary" : "default"}>
+                {isPast ? "COMPLETED" : trip.status === "next" ? "★ NEXT TRIP" : "PLANNED"}
+              </Badge>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-white/5">
-            <Button
-              variant="default"
-              onClick={() => onView(trip.id)}
-              className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 font-bold"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              View Plan
-            </Button>
+          <div className="md:col-span-2 p-6 flex flex-col justify-between">
+            <div>
+              <CardHeader className="p-0 mb-4">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white capitalize">
+                    {trip.destination_name}
+                  </CardTitle>
+                </div>
+                <div className="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4 text-pink-500" />
+                    <span>
+                      {new Date(trip.start_date).toLocaleDateString()} - {new Date(trip.end_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-lg text-emerald-600 dark:text-emerald-400">
+                    <DollarSign className="h-4 w-4" />
+                    <span className="font-bold tracking-tight">₹{trip.budget?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardHeader>
+            </div>
 
-            {!isPast && (
-              <>
-                {trip.status !== "next" && (
+            <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-white/5">
+              <Button
+                variant="default"
+                onClick={() => onView(trip.id)}
+                className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 font-bold"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Plan
+              </Button>
+
+              {!isPast && (
+                <>
+                  {trip.status !== "next" && (
+                    <Button
+                      variant="outline"
+                      onClick={() => onUpdateStatus(trip.id, "next")}
+                      className="border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-900/30 dark:text-blue-400"
+                    >
+                      Set as Next
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
-                    onClick={() => onUpdateStatus(trip.id, "next")}
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-900/30 dark:text-blue-400"
+                    onClick={() => onUpdateStatus(trip.id, "completed")}
+                    className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900/30 dark:text-emerald-400"
                   >
-                    Set as Next
+                    Mark Visited
                   </Button>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => onUpdateStatus(trip.id, "completed")}
-                  className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900/30 dark:text-emerald-400"
-                >
-                  Mark Visited
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 ml-auto">
-                      <XCircle className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-3xl border-slate-200 dark:border-white/10 shadow-2xl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-2xl font-black uppercase tracking-tight">Delete trip?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete your itinerary for <strong>{trip.destination_name}</strong>.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-xl font-bold">Back</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => onCancel(trip.id)}
-                        className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 ml-auto">
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-3xl border-slate-200 dark:border-white/10 shadow-2xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-black uppercase tracking-tight">Delete trip?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete your itinerary for <strong>{trip.destination_name}</strong>.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl font-bold">Back</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => onCancel(trip.id)}
+                          className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
-  </motion.div>
+      </Card>
+    </motion.div>
   );
 };
 
@@ -260,14 +260,14 @@ export function MyTrips() {
         <TabsContent value="upcoming" className="mt-8 space-y-6 outline-none">
           {trips.upcoming.length > 0 ? (
             trips.upcoming.map((trip) => (
-                <TripCard 
-                    key={trip.id} 
-                    trip={trip} 
-                    isPast={false} 
-                    onView={(id) => navigate(`/dashboard/itinerary/${id}`)}
-                    onUpdateStatus={handleUpdateStatus}
-                    onCancel={handleCancel}
-                />
+              <TripCard
+                key={trip.id}
+                trip={trip}
+                isPast={false}
+                onView={(id) => navigate(`/dashboard/itinerary/${id}`)}
+                onUpdateStatus={handleUpdateStatus}
+                onCancel={handleCancel}
+              />
             ))
           ) : (
             <Card className="border-dashed py-20 text-center bg-slate-50 dark:bg-white/5 border-slate-300 dark:border-white/10 rounded-3xl">
@@ -293,14 +293,14 @@ export function MyTrips() {
         <TabsContent value="past" className="mt-8 space-y-6 outline-none">
           {trips.past.length > 0 ? (
             trips.past.map((trip) => (
-                <TripCard 
-                    key={trip.id} 
-                    trip={trip} 
-                    isPast={true} 
-                    onView={(id) => navigate(`/dashboard/itinerary/${id}`)}
-                    onUpdateStatus={handleUpdateStatus}
-                    onCancel={handleCancel}
-                />
+              <TripCard
+                key={trip.id}
+                trip={trip}
+                isPast={true}
+                onView={(id) => navigate(`/dashboard/itinerary/${id}`)}
+                onUpdateStatus={handleUpdateStatus}
+                onCancel={handleCancel}
+              />
             ))
           ) : (
             <Card className="border-dashed py-20 text-center bg-slate-50 dark:bg-white/5 border-slate-300 dark:border-white/10 rounded-3xl">
