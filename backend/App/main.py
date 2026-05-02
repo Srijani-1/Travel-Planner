@@ -3,7 +3,7 @@ from .database import engine, Base
 from . import models
 from .core.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import login, register,trips,profile,rides, saved_places, sos, stays, stats, recommendations, images
+from .routers import login, register,trips,profile,rides, saved_places, sos, stays, stats, recommendations, images, community
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -36,6 +36,7 @@ app.include_router(stays.router)
 app.include_router(stats.router)
 app.include_router(images.router)
 app.include_router(recommendations.router)
+app.include_router(community.router)
 @app.get("/me")
 def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
