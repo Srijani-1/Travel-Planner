@@ -176,3 +176,83 @@ class Review(Base):
     # Relationships
     trip = relationship("Trip", back_populates="reviews")
     user = relationship("User", back_populates="reviews")
+
+class CommunityGroup(Base):
+    __tablename__ = "community_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String)  # "safety" | "destination" | "solo" | "general"
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    member_count = Column(Integer, default=0)
+    is_public = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    posts = relationship("CommunityPost", back_populates="group", cascade="all, delete-orphan")
+    memberships = relationship("GroupMembership", back_populates="group", cascade="all, delete-orphan")
+
+
+class GroupMembership(Base):
+    __tablename__ = "group_memberships"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("community_groups.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    joined_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    group = relationship("CommunityGroup", back_populates="memberships")
+
+
+class CommunityPost(Base):
+    __tablename__ = "community_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("community_groups.id", ondelete="CASCADE"), nullable=True)
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    post_type = Column(String, default="general")  # "general" | "report" | "tip" | "review"
+    title = Column(String, nullable=False)
+    body = Column(Text, nullable=False)
+    location = Column(String, nullable=True)        # Free-text location tag
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
+    upvotes = Column(Integer, default=0)
+    is_resolved = Column(Boolean, default=False)    # For safety reports
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    author = relationship("User")
+    group = relationship("CommunityGroup", back_populates="posts")
+    comments = relationship("PostComment", back_populates="post", cascade="all, delete-orphan")
+
+
+class PostComment(Base):
+    __tablename__ = "post_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("community_posts.id", ondelete="CASCADE"))
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    author = relationship("User")
+    post = relationship("CommunityPost", back_populates="comments")
+
+
+class PlaceReview(Base):
+    __tablename__ = "place_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    place_name = Column(String, nullable=False)
+    place_type = Column(String)         # "restaurant" | "hotel" | "area" | "transport"
+    location = Column(String, nullable=True)
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
+    rating = Column(Integer, nullable=False)        # 1–5
+    safety_rating = Column(Integer, nullable=True)  # 1–5, women-safety specific
+    body = Column(Text, nullable=False)
+    tags = Column(JSON, default=list)               # ["well-lit", "women-only", "safe-at-night"]
+    upvotes = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    author = relationship("User")
