@@ -226,3 +226,97 @@ class OTPResend(BaseModel):
  
 class GoogleAuth(BaseModel):
     token: str
+
+# ── Community Groups ─────────────────────────────────────────────────────────
+
+class CommunityGroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = "general"   # "safety" | "destination" | "solo" | "general"
+    is_public: Optional[bool] = True
+
+class CommunityGroupOut(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    category: Optional[str]
+    member_count: int
+    is_public: bool
+    created_at: datetime
+    is_member: Optional[bool] = False      # injected in the router
+
+    class Config:
+        from_attributes = True
+
+
+# ── Community Posts / Reports ─────────────────────────────────────────────────
+
+class CommunityPostCreate(BaseModel):
+    group_id: Optional[int] = None
+    post_type: Optional[str] = "general"   # "general" | "report" | "tip" | "review"
+    title: str
+    body: str
+    location: Optional[str] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+
+class CommunityPostOut(BaseModel):
+    id: int
+    group_id: Optional[int]
+    post_type: str
+    title: str
+    body: str
+    location: Optional[str]
+    upvotes: int
+    is_resolved: bool
+    created_at: datetime
+    author_name: Optional[str] = None     # injected in the router
+
+    class Config:
+        from_attributes = True
+
+
+# ── Post Comments ─────────────────────────────────────────────────────────────
+
+class PostCommentCreate(BaseModel):
+    body: str
+
+class PostCommentOut(BaseModel):
+    id: int
+    post_id: int
+    body: str
+    created_at: datetime
+    author_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ── Place Reviews ─────────────────────────────────────────────────────────────
+
+class PlaceReviewCreate(BaseModel):
+    place_name: str
+    place_type: Optional[str] = None       # "restaurant" | "hotel" | "area" | "transport"
+    location: Optional[str] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    rating: int                            # 1–5
+    safety_rating: Optional[int] = None   # 1–5
+    body: str
+    tags: Optional[List[str]] = []
+
+class PlaceReviewOut(BaseModel):
+    id: int
+    place_name: str
+    place_type: Optional[str]
+    location: Optional[str]
+    rating: int
+    safety_rating: Optional[int]
+    body: str
+    tags: List[str]
+    upvotes: int
+    created_at: datetime
+    author_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True

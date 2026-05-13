@@ -3,7 +3,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Map, Utensils, Wallet, Shield, Sparkles, Calendar } from "lucide-react";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ImageWithFallback";
 import { ThemeToggle } from "../components/ThemeToggle";
 import ScrollExpandMedia from "../components/ui/scroll-expansion-hero";
 

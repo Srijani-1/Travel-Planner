@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from "react-router";
 import { Button } from "../components/ui/button";
 import {
   LayoutDashboard, MapPin, Briefcase, Bookmark,
-  Shield, User, Home, LogOut, Settings as SettingsIcon,
+  Shield, User, Home, LogOut, Settings as SettingsIcon, Users,
   Map, Car, BedDouble, Menu, X, Phone
 } from "lucide-react";
 import { useState } from "react";
@@ -22,9 +22,10 @@ export function DashboardLayout() {
     { icon: Shield, label: "Safety", path: "/dashboard/safety" },
     { icon: Car, label: "Safe Rides", path: "/dashboard/safe-ride" },
     { icon: BedDouble, label: "Safe Stays", path: "/dashboard/safe-stays" },
-    { icon: Phone, label: "Emergency Contacts", path: "/dashboard/emergency-contacts" },
+    { icon: Phone, label: "SOS Contacts", path: "/dashboard/emergency-contacts" },
     { icon: User, label: "Profile", path: "/dashboard/profile" },
     { icon: SettingsIcon, label: "Settings", path: "/dashboard/settings" },
+    { icon: Users, label: "Community", path: "/dashboard/community" },
   ];
 
   // Group items so women-safety items are visually separated
@@ -44,8 +45,8 @@ export function DashboardLayout() {
       whileHover={{ scale: 1.02, x: 4 }}
       whileTap={{ scale: 0.98 }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${isActive(item.path)
-          ? "bg-gradient-to-r from-blue-500/15 to-purple-500/15 text-primary border border-primary/20 shadow-sm font-semibold"
-          : "text-muted-foreground hover:bg-muted/50 dark:hover:bg-white/5 hover:text-foreground font-medium"
+        ? "bg-gradient-to-r from-blue-500/15 to-purple-500/15 text-primary border border-primary/20 shadow-sm font-semibold"
+        : "text-muted-foreground hover:bg-muted/50 dark:hover:bg-white/5 hover:text-foreground font-medium"
         }`}
     >
       <item.icon className={`h-4 w-4 shrink-0 ${isActive(item.path) ? "text-primary" : ""}`} />
@@ -117,8 +118,8 @@ export function DashboardLayout() {
                     whileHover={{ scale: 1.02, x: 4 }}
                     whileTap={{ scale: 0.98 }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${isActive(item.path)
-                        ? "bg-gradient-to-r from-pink-500/15 to-rose-500/15 text-pink-600 dark:text-pink-400 border border-pink-400/20 shadow-sm font-semibold"
-                        : "text-muted-foreground hover:bg-pink-50 dark:hover:bg-pink-950/20 hover:text-pink-600 dark:hover:text-pink-400 font-medium"
+                      ? "bg-gradient-to-r from-pink-500/15 to-rose-500/15 text-pink-600 dark:text-pink-400 border border-pink-400/20 shadow-sm font-semibold"
+                      : "text-muted-foreground hover:bg-pink-50 dark:hover:bg-pink-950/20 hover:text-pink-600 dark:hover:text-pink-400 font-medium"
                       }`}
                   >
                     <item.icon className={`h-4 w-4 shrink-0 ${isActive(item.path) ? "text-pink-500" : ""}`} />
