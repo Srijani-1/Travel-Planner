@@ -206,7 +206,7 @@ export function LoginPage() {
                             <h1>Welcome back</h1>
                             <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Log in to continue your journey</p>
 
-                            {/* ── Google button — in JSX, inside return ── */}
+                            {/* ── Google button — in JSX, inside return ──
                             <button
                                 type="button"
                                 onClick={() => googleLogin()}
@@ -220,7 +220,7 @@ export function LoginPage() {
                                     <path fill="#FBBC05" d="M2.46 7.63A10 10 0 0 1 12 2c2.7 0 5.15 1.02 7 2.68L16.14 7.5A7.08 7.08 0 0 0 5.27 9.76z" />
                                 </svg>
                                 Continue with Google
-                            </button>
+                            </button> */}
 
                             {/* Divider */}
                             <div className="relative flex items-center gap-3 mb-6">
