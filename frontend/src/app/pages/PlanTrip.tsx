@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Slider } from "../components/ui/slider";
 import { Switch } from "../components/ui/switch";
@@ -13,20 +13,18 @@ import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Loader2 } from "lu
 import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { TripGeneratingLoader } from "../components/TripGeneratingLoader";
 
 export function PlanTrip() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isValidatingDestination, setIsValidatingDestination] = useState(false);
+  const [destinationError, setDestinationError] = useState("");
+  const [isValidDest, setIsValidDest] = useState(false);
 
   // Form state
   const [destination, setDestination] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const dest = params.get("destination");
-    if (dest) setDestination(dest);
-  }, []);
   const [duration, setDuration] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
@@ -41,24 +39,6 @@ export function PlanTrip() {
   const [customFeature, setCustomFeature] = useState("");
   const [peopleCount, setPeopleCount] = useState(1);
   const [showWarning, setShowWarning] = useState(false);
-
-  const totalSteps = 6;
-
-  const preferenceOptions = [
-    "Adventure",
-    "Relaxation",
-    "Culture",
-    "Food",
-  ];
-
-  const stayOptions = ["Hotel", "Hostel", "Airbnb", "Resort", "Guesthouse"];
-
-  const togglePreference = (pref: string) => {
-    setPreferences((prev) =>
-      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
-    );
-  };
-
   const [womenPrefs, setWomenPrefs] = useState({
     womenOnlyDriver: false,
     womenSafeStays: false,
@@ -66,10 +46,27 @@ export function PlanTrip() {
     shareLocation: false,
   });
 
+  const totalSteps = 6;
+  const preferenceOptions = ["Adventure", "Relaxation", "Culture", "Food"];
+  const stayOptions = ["Hotel", "Hostel", "Airbnb", "Resort", "Guesthouse"];
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dest = params.get("destination");
+    if (dest) setDestination(dest);
+  }, []);
+
+  const togglePreference = (pref: string) => {
+    setPreferences((prev) =>
+      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
+    );
+  };
+
   const validateStep = (currentStep: number) => {
     switch (currentStep) {
       case 1:
-        return !!destination && !!duration && !!startDate && !!endDate && peopleCount > 0;
+        // isValidDest must be true to proceed
+        return !!destination && !!duration && !!startDate && !!endDate && peopleCount > 0 && isValidDest;
       case 2:
         return preferences.length > 0;
       case 3:
@@ -83,37 +80,99 @@ export function PlanTrip() {
     }
   };
 
-  const handleNext = () => {
+  const handleDestinationBlur = async () => {
+    if (!destination.trim()) {
+      setDestinationError("");
+      setIsValidDest(false);
+      return;
+    }
+    setIsValidatingDestination(true);
+    setDestinationError("");
+    try {
+      const geoRes = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`
+      );
+      const geoData = await geoRes.json();
+      const result = geoData.results?.[0];
+
+      // Reject if no result, or population is too small to be a real destination
+      if (!result || (result.population ?? 0) < 1000) {
+        setDestinationError("⚠️ Not a valid destination. Try a well-known city or country name.");
+        setIsValidDest(false);
+      } else {
+        setDestinationError("");
+        setIsValidDest(true);
+      }
+    } catch {
+      setDestinationError("Failed to validate. Please check your connection.");
+      setIsValidDest(false);
+    } finally {
+      setIsValidatingDestination(false);
+    }
+  };
+
+  const handleNext = async () => {
     if (validateStep(step)) {
       setShowWarning(false);
-      if (step < totalSteps) {
-        setStep(step + 1);
+
+      // Safety net: if user somehow skipped blur, validate now
+      if (step === 1 && !isValidDest) {
+        setIsValidatingDestination(true);
+        try {
+          const geoRes = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`
+          );
+          const geoData = await geoRes.json();
+          const result = geoData.results?.[0];
+          if (!result || (result.population ?? 0) < 1000) {
+            setDestinationError("⚠️ Not a valid destination. Try a well-known city or country name.");
+            setIsValidatingDestination(false);
+            return;
+          }
+          setIsValidDest(true);
+        } catch {
+          toast.error("Failed to validate destination. Please try again.");
+          setIsValidatingDestination(false);
+          return;
+        }
+        setIsValidatingDestination(false);
       }
+
+      if (destinationError) return;
+      if (step < totalSteps) setStep(step + 1);
     } else {
       setShowWarning(true);
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    if (step > 1) setStep(step - 1);
   };
 
   const handleGenerate = async () => {
     if (!destination || !startDate || !endDate) return;
     setIsGenerating(true);
     try {
-      // ── Geocoding ──────────────────────────────────────────────────────────
       let lat = 0, lon = 0;
       try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`);
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`
+        );
         const geoData = await geoRes.json();
         if (geoData.results?.[0]) {
           lat = geoData.results[0].latitude;
           lon = geoData.results[0].longitude;
+        } else {
+          toast.error("Invalid destination. Please enter a valid city, country, or place.");
+          setIsGenerating(false);
+          return;
         }
-      } catch (e) { console.error("Geocoding failed", e); }
+      } catch (e) {
+        console.error("Geocoding failed", e);
+        toast.error("Failed to validate destination. Please try again.");
+        setIsGenerating(false);
+        return;
+      }
 
       const token = localStorage.getItem("access_token");
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/trips/plan`, {
@@ -131,7 +190,7 @@ export function PlanTrip() {
           budget: budget[0],
           people_count: peopleCount,
           travel_style: preferences[0] || "Solo",
-          preferences: preferences,
+          preferences,
           stay_type: stayType,
           rating_min: rating[0],
           safety_mode: safetyMode,
@@ -175,16 +234,41 @@ export function PlanTrip() {
             </div>
 
             <div className="space-y-4">
+              {/* Destination — single input with inline validation */}
               <div className="space-y-2">
                 <Label htmlFor="destination">Destination</Label>
-                <Input
-                  id="destination"
-                  placeholder="e.g., Paris, France"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="destination"
+                    placeholder="e.g., Paris, France"
+                    value={destination}
+                    onChange={(e) => {
+                      setDestination(e.target.value);
+                      setIsValidDest(false);
+                      setDestinationError("");
+                    }}
+                    onBlur={handleDestinationBlur}
+                    className={
+                      destinationError
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : isValidDest
+                          ? "border-green-500 focus-visible:ring-green-500"
+                          : ""
+                    }
+                  />
+                  {isValidatingDestination && (
+                    <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-gray-400" />
+                  )}
+                  {isValidDest && !isValidatingDestination && (
+                    <span className="absolute right-3 top-2.5 text-green-500 text-sm">✓</span>
+                  )}
+                </div>
+                {destinationError && (
+                  <p className="text-xs font-semibold text-red-500">{destinationError}</p>
+                )}
               </div>
 
+              {/* Duration */}
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (days)</Label>
                 <Input
@@ -194,11 +278,9 @@ export function PlanTrip() {
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                 />
-                {showWarning && (!destination || !duration || !startDate || !endDate || peopleCount <= 0) && (
-                  <p className="text-xs font-bold text-red-500">⚠️ Please fill in all destination, date, and people details.</p>
-                )}
               </div>
 
+              {/* Number of people */}
               <div className="space-y-2">
                 <Label htmlFor="peopleCount">Number of People</Label>
                 <Input
@@ -211,6 +293,7 @@ export function PlanTrip() {
                 />
               </div>
 
+              {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Start Date</Label>
@@ -242,6 +325,12 @@ export function PlanTrip() {
                   </Popover>
                 </div>
               </div>
+
+              {showWarning && (!destination || !duration || !startDate || !endDate || peopleCount <= 0) && (
+                <p className="text-xs font-bold text-red-500">
+                  ⚠️ Please fill in all destination, date, and people details.
+                </p>
+              )}
             </div>
           </motion.div>
         );
@@ -310,7 +399,9 @@ export function PlanTrip() {
             )}
 
             {showWarning && preferences.length === 0 && (
-              <p className="text-sm font-bold text-red-500 animate-pulse">⚠️ Please select at least one interest or add a custom one to continue.</p>
+              <p className="text-sm font-bold text-red-500 animate-pulse">
+                ⚠️ Please select at least one interest or add a custom one to continue.
+              </p>
             )}
           </motion.div>
         );
@@ -342,7 +433,7 @@ export function PlanTrip() {
                 />
                 <div className="flex justify-between text-sm text-gray-500">
                   <span>₹5,000</span>
-                  <span>₹200,000</span>
+                  <span>₹2,00,000</span>
                 </div>
               </div>
 
@@ -350,14 +441,15 @@ export function PlanTrip() {
                 {[
                   { label: "Economy", multiplier: 1500, color: "emerald", desc: "Hostels & Street Food" },
                   { label: "Standard", multiplier: 4500, color: "blue", desc: "3-4★ Hotels & Cafes" },
-                  { label: "Luxury", multiplier: 12000, color: "purple", desc: "Top Resorts & Fine Dining" }
+                  { label: "Luxury", multiplier: 12000, color: "purple", desc: "Top Resorts & Fine Dining" },
                 ].map((tier) => {
                   const est = tier.multiplier * (parseInt(duration) || 1) * peopleCount;
                   const isActive = Math.abs(budget[0] - est) < 500;
                   return (
                     <Card
                       key={tier.label}
-                      className={`cursor-pointer transition-all hover:scale-105 ${isActive ? `border-${tier.color}-600 border-2 bg-${tier.color}-50/30` : ""}`}
+                      className={`cursor-pointer transition-all hover:scale-105 ${isActive ? `border-${tier.color}-600 border-2 bg-${tier.color}-50/30` : ""
+                        }`}
                       onClick={() => setBudget([est])}
                     >
                       <CardContent className="pt-6 text-center">
@@ -391,7 +483,7 @@ export function PlanTrip() {
               {stayOptions.map((option) => (
                 <Card
                   key={option}
-                  className={`cursor-pointer hover:shadow-md transition-shadow ${stayType === option ? "border-blue-600 pink:border-pink-600 border-2" : ""
+                  className={`cursor-pointer hover:shadow-md transition-shadow ${stayType === option ? "border-blue-600 border-2" : ""
                     }`}
                   onClick={() => setStayType(option)}
                 >
@@ -419,14 +511,23 @@ export function PlanTrip() {
             </div>
 
             <div className="space-y-3 pt-6 border-t">
-              <Label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Common Features</Label>
+              <Label className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                Common Features
+              </Label>
               <div className="flex flex-wrap gap-2">
-                {["Sea-side View", "Pool", "Free WiFi", "Breakfast Included"].map(feature => (
+                {["Sea-side View", "Pool", "Free WiFi", "Breakfast Included"].map((feature) => (
                   <Badge
                     key={feature}
                     variant={accommodationFeatures.includes(feature) ? "default" : "outline"}
-                    className={`cursor-pointer px-3 py-1.5 transition-all ${accommodationFeatures.includes(feature) ? "bg-blue-600 pink:border-pink-600 shadow-md" : "hover:border-blue-400"}`}
-                    onClick={() => setAccommodationFeatures(prev => prev.includes(feature) ? prev.filter(f => f !== feature) : [...prev, feature])}
+                    className={`cursor-pointer px-3 py-1.5 transition-all ${accommodationFeatures.includes(feature)
+                      ? "bg-blue-600 shadow-md"
+                      : "hover:border-blue-400"
+                      }`}
+                    onClick={() =>
+                      setAccommodationFeatures((prev) =>
+                        prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]
+                      )
+                    }
                   >
                     {feature}
                   </Badge>
@@ -443,7 +544,7 @@ export function PlanTrip() {
                   onChange={(e) => setCustomFeature(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && customFeature.trim()) {
-                      setAccommodationFeatures(prev => [...prev, customFeature.trim()]);
+                      setAccommodationFeatures((prev) => [...prev, customFeature.trim()]);
                       setCustomFeature("");
                     }
                   }}
@@ -452,7 +553,7 @@ export function PlanTrip() {
                   variant="secondary"
                   onClick={() => {
                     if (customFeature.trim()) {
-                      setAccommodationFeatures(prev => [...prev, customFeature.trim()]);
+                      setAccommodationFeatures((prev) => [...prev, customFeature.trim()]);
                       setCustomFeature("");
                     }
                   }}
@@ -463,7 +564,9 @@ export function PlanTrip() {
             </div>
 
             {showWarning && (!stayType || accommodationFeatures.length === 0) && (
-              <p className="text-sm font-bold text-red-500 animate-pulse mt-4">⚠️ Please select your stay type and at least one feature.</p>
+              <p className="text-sm font-bold text-red-500 animate-pulse mt-4">
+                ⚠️ Please select your stay type and at least one feature.
+              </p>
             )}
           </motion.div>
         );
@@ -486,11 +589,12 @@ export function PlanTrip() {
               {[
                 { id: "Veg", label: "Vegetarian", icon: "🥦" },
                 { id: "Non-Veg", label: "Non-Vegetarian", icon: "🍖" },
-                { id: "Vegan", label: "Vegan", icon: "🌱" }
+                { id: "Vegan", label: "Vegan", icon: "🌱" },
               ].map((option) => (
                 <Card
                   key={option.id}
-                  className={`cursor-pointer hover:shadow-md transition-all ${dietary === option.id ? "border-blue-600 pink:border-pink-600 border-2 bg-blue-50/30 pink:bg-pink-50/30" : ""}`}
+                  className={`cursor-pointer hover:shadow-md transition-all ${dietary === option.id ? "border-blue-600 border-2 bg-blue-50/30" : ""
+                    }`}
                   onClick={() => setDietary(option.id)}
                 >
                   <CardContent className="pt-6 text-center space-y-2">
@@ -500,8 +604,11 @@ export function PlanTrip() {
                 </Card>
               ))}
             </div>
+
             {showWarning && dietary === "None" && (
-              <p className="text-sm font-bold text-red-500 animate-pulse mt-4">⚠️ Please select your dietary preference.</p>
+              <p className="text-sm font-bold text-red-500 animate-pulse mt-4">
+                ⚠️ Please select your dietary preference.
+              </p>
             )}
           </motion.div>
         );
@@ -520,7 +627,6 @@ export function PlanTrip() {
               <p className="text-gray-600">Enable enhanced safety features for your trip</p>
             </div>
 
-            {/* Women Safety Mode toggle */}
             <Card className={safetyMode ? "border-pink-400 border-2 bg-pink-50/50 dark:bg-pink-950/20" : ""}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between gap-4">
@@ -546,7 +652,6 @@ export function PlanTrip() {
               </CardContent>
             </Card>
 
-            {/* Women-specific options — only visible when safetyMode is on */}
             {safetyMode && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -572,15 +677,17 @@ export function PlanTrip() {
                         </div>
                         <Switch
                           checked={womenPrefs[opt.key as keyof typeof womenPrefs]}
-                          onCheckedChange={(val) => setWomenPrefs(prev => ({ ...prev, [opt.key]: val }))}
+                          onCheckedChange={(val) =>
+                            setWomenPrefs((prev) => ({ ...prev, [opt.key]: val }))
+                          }
                         />
                       </div>
                     </CardContent>
                   </Card>
                 ))}
 
-                <div className="p-3 bg-green-50 dark:bg-green-950/30 pink:bg-pink-100/50 border border-green-200 dark:border-green-800 pink:border-pink-300 rounded-lg">
-                  <p className="text-sm font-medium text-green-800 dark:text-green-400 pink:text-pink-900">
+                <div className="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-400">
                     ✓ Safety mode enabled. Your itinerary will include enhanced safety features.
                   </p>
                 </div>
@@ -595,7 +702,7 @@ export function PlanTrip() {
                   <p><span className="text-gray-600 dark:text-gray-400">Destination:</span>{" "}<span className="font-medium">{destination || "Not set"}</span></p>
                   <p><span className="text-gray-600 dark:text-gray-400">Duration:</span>{" "}<span className="font-medium">{duration || "Not set"} days</span></p>
                   <p><span className="text-gray-600 dark:text-gray-400">Interests:</span>{" "}<span className="font-medium">{preferences.length > 0 ? preferences.join(", ") : "None selected"}</span></p>
-                  <p><span className="text-gray-600 dark:text-gray-400">Budget:</span>{" "}<span className="font-medium">₹{budget[0].toLocaleString()} ({peopleCount} people)</span></p>
+                  <p><span className="text-gray-600 dark:text-gray-400">Budget:</span>{" "}<span className="font-medium">₹{budget[0].toLocaleString()} ({peopleCount} {peopleCount === 1 ? "person" : "people"})</span></p>
                   <p><span className="text-gray-600 dark:text-gray-400">Stay Type:</span>{" "}<span className="font-medium">{stayType || "Not selected"}</span></p>
                   <p><span className="text-gray-600 dark:text-gray-400">Features:</span>{" "}<span className="font-medium text-blue-600">{accommodationFeatures.length > 0 ? accommodationFeatures.join(", ") : "None"}</span></p>
                   <p><span className="text-gray-600 dark:text-gray-400">Dietary:</span>{" "}<span className="font-medium text-green-600">{dietary}</span></p>
@@ -605,24 +712,25 @@ export function PlanTrip() {
             </Card>
           </motion.div>
         );
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1>Plan Your Trip</h1>
+    <>
+      {isGenerating && <TripGeneratingLoader destination={destination} />}
+      <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1>Plan Your Trip</h1>
         <p className="text-gray-600">Let's create your perfect itinerary in a few simple steps</p>
       </div>
 
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">
-            Step {step} of {totalSteps}
-          </span>
+          <span className="text-sm font-medium">Step {step} of {totalSteps}</span>
           <span className="text-sm text-gray-500">{Math.round((step / totalSteps) * 100)}%</span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -648,9 +756,18 @@ export function PlanTrip() {
             </Button>
 
             {step < totalSteps ? (
-              <Button onClick={handleNext}>
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
+              <Button onClick={handleNext} disabled={isValidatingDestination}>
+                {isValidatingDestination ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
               </Button>
             ) : (
               <Button onClick={handleGenerate} disabled={isGenerating}>
@@ -668,5 +785,6 @@ export function PlanTrip() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
