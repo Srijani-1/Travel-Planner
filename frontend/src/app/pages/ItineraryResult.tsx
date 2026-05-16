@@ -591,7 +591,7 @@ export function ItineraryResult() {
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <Badge className="bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border-none px-3">AI-Generated</Badge>
               <Badge variant="outline" className="border-slate-200 dark:border-white/10 px-3">
@@ -599,16 +599,21 @@ export function ItineraryResult() {
                 {content.total_days} Days
               </Badge>
             </div>
-            <h1 className="text-4xl lg:text-7xl">
-              Adventure in{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-indigo-600 dark:from-pink-400 dark:to-indigo-400">
-                {content.destination}
+            <h1
+              className="font-black leading-tight break-words hyphens-auto"
+              style={{ fontSize: "clamp(1.8rem, 5vw, 4.5rem)" }}
+            >
+              Trip to{" "}
+              <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-indigo-600 dark:from-pink-400 dark:to-indigo-400">
+                {content.destination}&nbsp;
               </span>
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">
+            <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: "clamp(0.85rem, 2vw, 1.1rem)" }}>
               A bespoke journey curated for{" "}
-              {trip.budget ? `a budget of ₹${trip.budget.toLocaleString()}` : "your preferences"}.{" "}
-              <span className="font-medium text-slate-600 dark:text-slate-300">{content.budget_estimate}</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {trip.budget ? `₹${trip.budget.toLocaleString()}` : "your preferences"}
+              </span>
+              {" · "}{content.total_days} days{" · "}{trip.preferences?.join(", ")}
             </p>
           </div>
           <div className="flex gap-3">
