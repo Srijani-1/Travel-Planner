@@ -6,6 +6,7 @@ import { DashboardLayout } from "./pages/DashboardLayout";
 import { DashboardHome } from "./pages/DashboardHome";
 import { PlanTrip } from "./pages/PlanTrip";
 import { MyTrips } from "./pages/MyTrips";
+import { SavedPlaces } from "./pages/SavedPlaces";
 import { Safety } from "./pages/Safety";
 import { Profile } from "./pages/Profile";
 import { Settings } from "./pages/Settings";
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
             { index: true, Component: DashboardHome },
             { path: "plan-trip", Component: PlanTrip },
             { path: "my-trips", Component: MyTrips },
+            { path: "saved", Component: SavedPlaces },
             { path: "safety", Component: Safety },
             { path: "profile", Component: Profile },
             { path: "settings", Component: Settings },
