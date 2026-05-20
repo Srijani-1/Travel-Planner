@@ -9,6 +9,8 @@ from ..schemas import (
     CommunityPostCreate, CommunityPostOut,
     PostCommentCreate, PostCommentOut,
     PlaceReviewCreate, PlaceReviewOut,
+    GroupMessageCreate, GroupMessageOut,
+    SafetyReportCreate,
 )
 
 router = APIRouter(prefix="/community", tags=["Community"])
@@ -20,6 +22,7 @@ def _group_out(group: models.CommunityGroup, user_id: int) -> CommunityGroupOut:
     is_member = any(m.user_id == user_id for m in group.memberships)
     data = CommunityGroupOut.model_validate(group)
     data.is_member = is_member
+    data.is_owner = group.created_by == user_id
     return data
 
 def _post_out(post: models.CommunityPost) -> CommunityPostOut:
@@ -30,6 +33,12 @@ def _post_out(post: models.CommunityPost) -> CommunityPostOut:
 def _review_out(review: models.PlaceReview) -> PlaceReviewOut:
     data = PlaceReviewOut.model_validate(review)
     data.author_name = review.author.full_name if review.author else "Anonymous"
+    return data
+
+def _message_out(msg: models.GroupMessage) -> GroupMessageOut:
+    data = GroupMessageOut.model_validate(msg)
+    data.author_name = msg.author.full_name if msg.author else "Anonymous"
+    data.author_id = msg.author_id
     return data
 
 
@@ -57,13 +66,33 @@ def create_group(
     group = models.CommunityGroup(**payload.model_dump(), created_by=current_user.id)
     db.add(group)
     db.flush()
-    # auto-join creator
     membership = models.GroupMembership(group_id=group.id, user_id=current_user.id)
     group.member_count = 1
     db.add(membership)
     db.commit()
     db.refresh(group)
     return _group_out(group, current_user.id)
+
+
+@router.delete("/groups/{group_id}", status_code=204)
+def delete_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Only the group owner can delete a group. Cascades to memberships, posts, and messages."""
+    group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
+    if not group:
+        raise HTTPException(404, "Group not found")
+    if group.created_by != current_user.id:
+        raise HTTPException(403, "Only the group owner can delete this group")
+
+    # Cascade-delete memberships, messages, and posts that belong to this group
+    db.query(models.GroupMembership).filter_by(group_id=group_id).delete()
+    db.query(models.GroupMessage).filter_by(group_id=group_id).delete()
+    db.query(models.CommunityPost).filter_by(group_id=group_id).delete()
+    db.delete(group)
+    db.commit()
 
 
 @router.post("/groups/{group_id}/join", status_code=200)
@@ -94,18 +123,94 @@ def leave_group(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
+    if not group:
+        raise HTTPException(404, "Group not found")
+    if group.created_by == current_user.id:
+        raise HTTPException(400, "Owner cannot leave — transfer ownership or delete the group")
+
     membership = db.query(models.GroupMembership).filter_by(
         group_id=group_id, user_id=current_user.id
     ).first()
     if not membership:
         raise HTTPException(404, "Not a member")
 
-    group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
     db.delete(membership)
-    if group and group.member_count > 0:
+    if group.member_count > 0:
         group.member_count -= 1
     db.commit()
     return {"detail": "Left group"}
+
+
+# ── Group Chat ────────────────────────────────────────────────────────────────
+
+@router.get("/groups/{group_id}/messages", response_model=List[GroupMessageOut])
+def list_messages(
+    group_id: int,
+    limit: int = Query(50, le=100),
+    before_id: Optional[int] = Query(None, description="Cursor — return messages with id < before_id"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Return paginated chat history for a group. Caller must be a member."""
+    membership = db.query(models.GroupMembership).filter_by(
+        group_id=group_id, user_id=current_user.id
+    ).first()
+    if not membership:
+        raise HTTPException(403, "You must join this group to read its chat")
+
+    q = db.query(models.GroupMessage).filter(models.GroupMessage.group_id == group_id)
+    if before_id:
+        q = q.filter(models.GroupMessage.id < before_id)
+    messages = q.order_by(models.GroupMessage.id.desc()).limit(limit).all()
+    # Return in ascending order so the UI can append naturally
+    return [_message_out(m) for m in reversed(messages)]
+
+
+@router.post("/groups/{group_id}/messages", response_model=GroupMessageOut, status_code=201)
+def send_message(
+    group_id: int,
+    payload: GroupMessageCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Send a chat message to a group. Caller must be a member."""
+    membership = db.query(models.GroupMembership).filter_by(
+        group_id=group_id, user_id=current_user.id
+    ).first()
+    if not membership:
+        raise HTTPException(403, "You must join this group to send messages")
+
+    msg = models.GroupMessage(
+        group_id=group_id,
+        author_id=current_user.id,
+        body=payload.body,
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return _message_out(msg)
+
+
+@router.delete("/groups/{group_id}/messages/{message_id}", status_code=204)
+def delete_message(
+    group_id: int,
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Message author or group owner can delete a message."""
+    msg = db.query(models.GroupMessage).filter_by(id=message_id, group_id=group_id).first()
+    if not msg:
+        raise HTTPException(404, "Message not found")
+
+    group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
+    is_owner = group and group.created_by == current_user.id
+    if msg.author_id != current_user.id and not is_owner:
+        raise HTTPException(403, "Cannot delete this message")
+
+    db.delete(msg)
+    db.commit()
 
 
 # ── Posts / Reports ───────────────────────────────────────────────────────────
@@ -140,6 +245,36 @@ def create_post(
     return _post_out(post)
 
 
+@router.post("/posts/from-safety-report", response_model=CommunityPostOut, status_code=201)
+def create_post_from_safety_report(
+    payload: SafetyReportCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """
+    Bridge endpoint called by the Safety page when a user submits an incident report.
+    Creates a community post with post_type='report' so it appears in the Feed.
+
+    The Safety page still calls its own api.incidents.report() for local authority
+    notification — this endpoint handles the community side only.
+    """
+    title = payload.title or f"Safety incident in {payload.location or 'unknown location'}"
+    post = models.CommunityPost(
+        author_id=current_user.id,
+        post_type="report",
+        title=title,
+        body=payload.description,
+        location=payload.location,
+        group_id=None,          # global feed by default
+        is_resolved=False,
+        upvotes=0,
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return _post_out(post)
+
+
 @router.patch("/posts/{post_id}/resolve", status_code=200)
 def resolve_post(
     post_id: int,
@@ -154,6 +289,22 @@ def resolve_post(
     post.is_resolved = True
     db.commit()
     return {"detail": "Resolved"}
+
+
+@router.delete("/posts/{post_id}", status_code=204)
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    post = db.query(models.CommunityPost).filter_by(id=post_id).first()
+    if not post:
+        raise HTTPException(404, "Post not found")
+    if post.author_id != current_user.id:
+        raise HTTPException(403, "Not your post")
+    db.query(models.PostComment).filter_by(post_id=post_id).delete()
+    db.delete(post)
+    db.commit()
 
 
 @router.post("/posts/{post_id}/upvote", status_code=200)
