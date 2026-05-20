@@ -134,13 +134,7 @@ export function LandingPage() {
                   >
                     Start Planning
                   </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="text-lg px-8 h-14 hover:bg-muted/50 backdrop-blur-sm border-2 transition-all hover:scale-105"
-                  >
-                    Watch Demo
-                  </Button>
+
                 </div>
               </motion.div>
 
