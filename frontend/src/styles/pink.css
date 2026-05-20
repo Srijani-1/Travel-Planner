@@ -1,0 +1,42 @@
+.pink {
+    --background: #fff1f2;
+    /* Rose 50 */
+    --foreground: #4c0519;
+    /* Rose 950 */
+    --card: #ffffff;
+    --card-foreground: #4c0519;
+    --popover: #ffffff;
+    --popover-foreground: #4c0519;
+    --primary: #e11d48;
+    /* Rose 600 */
+    --primary-foreground: #ffffff;
+    --secondary: #fb7185;
+    /* Rose 400 */
+    --secondary-foreground: #ffffff;
+    --muted: #ffe4e6;
+    /* Rose 100 */
+    --muted-foreground: #9f1239;
+    /* Rose 800 */
+    --accent: #fda4af;
+    /* Rose 300 */
+    --accent-foreground: #881337;
+    /* Rose 900 */
+    --destructive: #be123c;
+    --destructive-foreground: #ffffff;
+    --border: #fecdd3;
+    /* Rose 200 */
+    --input: #fff1f2;
+    --input-background: #ffffff;
+    --switch-background: #fb7185;
+    --ring: #e11d48;
+    --sidebar: #ffe4e6;
+    /* Rose 100 */
+    --sidebar-foreground: #881337;
+    /* Rose 900 */
+    --sidebar-primary: #e11d48;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #fecdd3;
+    --sidebar-accent-foreground: #9f1239;
+    --sidebar-border: #fda4af;
+    --sidebar-ring: #e11d48;
+}

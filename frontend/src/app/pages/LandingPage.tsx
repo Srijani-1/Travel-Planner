@@ -117,7 +117,7 @@ export function LandingPage() {
                 </div>
                 <h1 className="text-5xl lg:text-7xl font-extrabold mb-6 tracking-tight text-foreground">
                   Plan Your{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 drop-shadow-sm">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 drop-shadow-sm pr-4">
                     Perfect Trip
                   </span>{" "}
                   with AI
@@ -159,7 +159,7 @@ export function LandingPage() {
                     className="w-full h-[500px] object-cover"
                   />
                 </div>
-                <motion.div
+                {/* <motion.div
                   animate={{ y: [-8, 8, -8] }}
                   transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                   className="absolute -bottom-8 -right-8 bg-white/90 dark:bg-card/90 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/10 p-5 flex items-center gap-4 z-20 border border-white/20 dark:border-white/10"
@@ -171,7 +171,7 @@ export function LandingPage() {
                     <div className="font-bold text-2xl text-foreground">1,247+</div>
                     <div className="text-sm text-muted-foreground font-medium">Trips Planned</div>
                   </div>
-                </motion.div>
+                </motion.div> */}
               </motion.div>
             </div>
           </div>
@@ -239,7 +239,10 @@ export function LandingPage() {
                   transition={{ duration: 0.6, delay: index * 0.1, type: "spring", stiffness: 100 }}
                   viewport={{ once: true, margin: "-100px" }}
                 >
-                  <Card className="overflow-hidden border border-border/50 bg-card hover:shadow-2xl transition-all duration-500 cursor-pointer group rounded-3xl h-full flex flex-col">
+                  <Card
+                    onClick={() => navigate("/login")}
+                    className="overflow-hidden border border-border/50 bg-card hover:shadow-2xl transition-all duration-500 cursor-pointer group rounded-3xl h-full flex flex-col"
+                  >
                     <div className="relative h-72 overflow-hidden mx-3 mt-3 rounded-2xl">
                       <div className="absolute inset-0 bg-blue-900/20 group-hover:bg-transparent transition-colors duration-500 z-10" />
                       <ImageWithFallback

@@ -15,6 +15,7 @@ import SafeRide from './pages/SafeRide';
 import SafeStays from './pages/SafeStays';
 import EmergencyContacts from './pages/EmergencyContacts';
 import { Community } from './pages/Community';
+import { OTPVerify } from "./pages/OTPverify";
 
 export const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
     {
         path: "/register",
         Component: RegisterPage,
+    },
+    {
+        path: "/verify-otp",
+        Component: OTPVerify,
     },
     {
         path: "/dashboard",

@@ -7,7 +7,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 
 export default function SafeStays() {
-    const [filter, setFilter] = useState<'all' | 'Women-only' | 'Women-preferred'>('all');
+    const [sortBy, setSortBy] = useState<'rating_desc' | 'rating_asc'>('rating_desc');
     const [searchTerm, setSearchTerm] = useState('');
     const [location, setLocation] = useState('');
     const [checkIn, setCheckIn] = useState('');
@@ -20,7 +20,7 @@ export default function SafeStays() {
         setLoading(true);
         try {
             const params: any = {};
-            if (filter !== 'all') params.stay_type = filter;
+            if (loc || location) params.location = loc || location;
             if (loc || location) params.location = loc || location;
             if (checkIn) params.check_in = checkIn;
             if (checkOut) params.check_out = checkOut;
@@ -37,7 +37,13 @@ export default function SafeStays() {
 
     useEffect(() => {
         if (location) fetchStays();
-    }, [filter]);
+    }, [sortBy]);
+
+    const sortedStays = [...stays].sort((a, b) => {
+        if (sortBy === 'rating_desc') return (b.rating || 0) - (a.rating || 0);
+        if (sortBy === 'rating_asc') return (a.rating || 0) - (b.rating || 0);
+        return 0;
+    });
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -134,18 +140,16 @@ export default function SafeStays() {
                 </form>
             </Card>
 
-            {/* AI Filter Toggles */}
-            <div className="flex flex-wrap gap-3">
-                {(['all', 'Women-only', 'Women-preferred'] as const).map(f => (
-                    <button key={f} onClick={() => setFilter(f)}
-                        className={`px-8 py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300 shadow-sm
-              ${filter === f
-                                ? 'bg-pink-600 text-white border-pink-700 shadow-pink-500/30'
-                                : 'bg-white dark:bg-white/5 text-slate-500 border-slate-100 dark:border-white/5 hover:border-pink-300'}`}
-                    >
-                        {f === 'all' ? 'Everywhere' : f}
-                    </button>
-                ))}
+            {/* Sort Options */}
+            <div className="flex flex-wrap gap-3 justify-end">
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="px-4 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                    <option value="rating_desc">Highest Rated First</option>
+                    <option value="rating_asc">Lowest Rated First</option>
+                </select>
             </div>
 
             {loading ? (
@@ -171,7 +175,7 @@ export default function SafeStays() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {stays.map((stay, i) => (
+                    {sortedStays.map((stay, i) => (
                         <motion.div key={stay.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                             className="group bg-white dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-[3rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500"
                         >
@@ -182,12 +186,7 @@ export default function SafeStays() {
                                     onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800" }}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md shadow-2xl
-                                        ${stay.stay_type === 'Women-only' ? 'bg-pink-600 text-white' : 'bg-indigo-600 text-white'}`}>
-                                        {stay.stay_type === 'Women-only' ? '♀ Only' : '♀ Ladies First'}
-                                    </span>
-                                </div>
+
                                 <button onClick={() => toggleSave(stay)}
                                     className="absolute top-4 right-4 h-10 w-10 bg-white/90 dark:bg-black/90 backdrop-blur-xl rounded-full flex items-center justify-center text-slate-900 dark:text-white shadow-2xl transition-all hover:scale-110 active:scale-95">
                                     <Heart className={`h-5 w-5 ${saved.has(stay.id) ? 'fill-pink-500 text-pink-500' : ''}`} />

@@ -1,4 +1,5 @@
 @custom-variant dark (&:is(.dark *));
+@custom-variant pink (&:is(.pink *));
 
 :root {
   --font-size: 16px;
@@ -78,6 +79,38 @@
   --sidebar-accent-foreground: #f1f5f9;
   --sidebar-border: #334155;
   --sidebar-ring: #60a5fa;
+}
+
+.pink {
+  --background: #fff1f2;
+  --foreground: #4c0519;
+  --card: #ffffff;
+  --card-foreground: #4c0519;
+  --popover: #ffffff;
+  --popover-foreground: #4c0519;
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --secondary: #fb7185;
+  --secondary-foreground: #ffffff;
+  --muted: #ffe4e6;
+  --muted-foreground: #9f1239;
+  --accent: #fda4af;
+  --accent-foreground: #881337;
+  --destructive: #be123c;
+  --destructive-foreground: #ffffff;
+  --border: #fecdd3;
+  --input: #fff1f2;
+  --input-background: #ffffff;
+  --switch-background: #fb7185;
+  --ring: #e11d48;
+  --sidebar: #ffe4e6;
+  --sidebar-foreground: #881337;
+  --sidebar-primary: #e11d48;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fecdd3;
+  --sidebar-accent-foreground: #9f1239;
+  --sidebar-border: #fda4af;
+  --sidebar-ring: #e11d48;
 }
 
 @theme inline {

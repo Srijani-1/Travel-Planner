@@ -75,18 +75,54 @@ export const api = {
 
     // ── SOS ────────────────────────────────────────────────────────────────
     sos: {
-        trigger: (data: { lat: number; lon: number; message?: string }) =>
+        trigger: (data: { lat: number; lon: number; message?: string; trip_id?: string }) =>
             request("/sos/trigger", { method: "POST", body: JSON.stringify(data) }),
 
         contacts: {
             list: () => request<any[]>("/sos/contacts"),
-            // NEW: two-step add
             sendOtp: (data: { name: string; phone: string; relation?: string }) =>
                 request("/sos/contacts/send-otp", { method: "POST", body: JSON.stringify(data) }),
             verifyOtp: (data: { phone: string; otp: string }) =>
                 request("/sos/contacts/verify-otp", { method: "POST", body: JSON.stringify(data) }),
             delete: (id: number) => request(`/sos/contacts/${id}`, { method: "DELETE" }),
         },
+    },
+    // ── Check-In ───────────────────────────────────────────────────────────
+    checkin: {
+        post: (data: { trip_id: string; lat?: number; lon?: number }) =>
+            request("/sos/checkin", { method: "POST", body: JSON.stringify(data) }),
+
+        register: (trip_id: string, interval_minutes: number) =>
+            request(
+                `/sos/checkin/register?trip_id=${encodeURIComponent(trip_id)}&interval_minutes=${interval_minutes}`,
+                { method: "POST" }
+            ),
+
+        unregister: () => request("/sos/checkin/register", { method: "DELETE" }),
+    },
+
+    // ── Live Location (REST polling fallback) ──────────────────────────────
+    location: {
+        update: (data: { trip_id: string; lat: number; lon: number }) =>
+            request("/sos/location/update", { method: "POST", body: JSON.stringify(data) }),
+    },
+
+    // ── Nearby Alerts ──────────────────────────────────────────────────────
+    alerts: {
+        nearby: (params: { lat: number; lon: number; radius_km?: number }) => {
+            const q = new URLSearchParams({
+                lat: String(params.lat),
+                lon: String(params.lon),
+                radius_km: String(params.radius_km ?? 5),
+            }).toString();
+            return request<any[]>(`/sos/alerts/nearby?${q}`);
+        },
+    },
+
+    // ── Incident Reports ───────────────────────────────────────────────────
+    incidents: {
+        report: (data: { trip_id: string; description: string; lat?: number; lon?: number }) =>
+            request("/sos/incidents/report", { method: "POST", body: JSON.stringify(data) }),
     },
 
     // ── Recommendations ────────────────────────────────────────────────────
