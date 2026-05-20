@@ -112,34 +112,44 @@ export function PlanTrip() {
   };
 
   const handleNext = async () => {
-    if (validateStep(step)) {
-      setShowWarning(false);
+    // STEP 1 special validation FIRST
+    if (step === 1 && !isValidDest) {
+      setIsValidatingDestination(true);
 
-      // Safety net: if user somehow skipped blur, validate now
-      if (step === 1 && !isValidDest) {
-        setIsValidatingDestination(true);
-        try {
-          const geoRes = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`
+      try {
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&language=en&format=json`
+        );
+
+        const geoData = await geoRes.json();
+        const result = geoData.results?.[0];
+
+        if (!result || (result.population ?? 0) < 1000) {
+          setDestinationError(
+            "⚠️ Not a valid destination. Try a well-known city or country name."
           );
-          const geoData = await geoRes.json();
-          const result = geoData.results?.[0];
-          if (!result || (result.population ?? 0) < 1000) {
-            setDestinationError("⚠️ Not a valid destination. Try a well-known city or country name.");
-            setIsValidatingDestination(false);
-            return;
-          }
-          setIsValidDest(true);
-        } catch {
-          toast.error("Failed to validate destination. Please try again.");
           setIsValidatingDestination(false);
           return;
         }
+
+        setDestinationError("");
+        setIsValidDest(true);
+      } catch {
+        toast.error("Failed to validate destination. Please try again.");
         setIsValidatingDestination(false);
+        return;
       }
 
-      if (destinationError) return;
-      if (step < totalSteps) setStep(step + 1);
+      setIsValidatingDestination(false);
+    }
+
+    // NOW validate full step
+    if (validateStep(step)) {
+      setShowWarning(false);
+
+      if (step < totalSteps) {
+        setStep((prev) => prev + 1);
+      }
     } else {
       setShowWarning(true);
     }
@@ -724,67 +734,67 @@ export function PlanTrip() {
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1>Plan Your Trip</h1>
-        <p className="text-gray-600">Let's create your perfect itinerary in a few simple steps</p>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Step {step} of {totalSteps}</span>
-          <span className="text-sm text-gray-500">{Math.round((step / totalSteps) * 100)}%</span>
+          <p className="text-gray-600">Let's create your perfect itinerary in a few simple steps</p>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-blue-600 to-purple-600"
-            initial={{ width: 0 }}
-            animate={{ width: `${(step / totalSteps) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </div>
 
-      {/* Form Steps */}
-      <Card>
-        <CardContent className="pt-6">
-          <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button variant="outline" onClick={handleBack} disabled={step === 1}>
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-
-            {step < totalSteps ? (
-              <Button onClick={handleNext} disabled={isValidatingDestination}>
-                {isValidatingDestination ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Validating...
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleGenerate} disabled={isGenerating}>
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Itinerary"
-                )}
-              </Button>
-            )}
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Step {step} of {totalSteps}</span>
+            <span className="text-sm text-gray-500">{Math.round((step / totalSteps) * 100)}%</span>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-blue-600 to-purple-600"
+              initial={{ width: 0 }}
+              animate={{ width: `${(step / totalSteps) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
+
+        {/* Form Steps */}
+        <Card>
+          <CardContent className="pt-6">
+            <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8 pt-6 border-t">
+              <Button variant="outline" onClick={handleBack} disabled={step === 1}>
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+
+              {step < totalSteps ? (
+                <Button onClick={handleNext} disabled={isValidatingDestination}>
+                  {isValidatingDestination ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button onClick={handleGenerate} disabled={isGenerating}>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate Itinerary"
+                  )}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </>
   );
 }

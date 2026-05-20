@@ -67,7 +67,7 @@ async def list_safe_stays(
             return local_results
  
         # 2. Use AI to fetch 'real' stays if nothing in DB
-        ai_stays = await search_safe_stays(location, stay_type or "Women-only", check_in, check_out)
+        ai_stays = await search_safe_stays(location, "safe for women", check_in, check_out)
         # Ensure only high rated ones are returned
         ai_stays.sort(key=lambda x: x.get("rating", 0), reverse=True)
         return ai_stays
