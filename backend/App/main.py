@@ -22,6 +22,7 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
+        "https://travel-planner.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -40,7 +41,7 @@ async def log_requests(request, call_next):
     except Exception as e:
         print("ERROR OCCURRED:", str(e))
         raise e
-        
+
 app.include_router(login.router)
 app.include_router(register.router)
 app.include_router(trips.router)
