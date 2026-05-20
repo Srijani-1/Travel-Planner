@@ -13,6 +13,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 50
 
 security = HTTPBearer(auto_error=True)
 
+
 def generate_token(data: dict) -> str:
     to_encode = data.copy()
 
@@ -27,9 +28,22 @@ def generate_token(data: dict) -> str:
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db),
+) -> models.User:
     token = credentials.credentials
+    return _decode_and_fetch(token, db)
+
+
+async def get_user_from_token(token: str, db: Session) -> models.User:
+    """
+    Authenticate a user from a raw JWT string (no HTTPBearer wrapper).
+    Used by the WebSocket endpoint where FastAPI's Depends() doesn't apply.
+    """
+    return _decode_and_fetch(token, db)
+
+
+def _decode_and_fetch(token: str, db: Session) -> models.User:
+    """Shared logic: decode JWT → look up user → return or raise 401."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -38,16 +52,13 @@ def get_current_user(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-
+        email: str = payload.get("sub")
         if not email or not isinstance(email, str):
             raise credentials_exception
-
     except JWTError:
         raise credentials_exception
 
     user = db.query(models.User).filter(models.User.email == email).first()
-
     if user is None:
         raise credentials_exception
 

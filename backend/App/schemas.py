@@ -236,6 +236,19 @@ class CommunityGroupCreate(BaseModel):
     category: Optional[str] = "general"   # "safety" | "destination" | "solo" | "general"
     is_public: Optional[bool] = True
 
+class GroupMessageCreate(BaseModel):
+    body: str
+
+class GroupMessageOut(BaseModel):
+    id:          int
+    group_id:    int
+    author_id:   Optional[int]
+    author_name: str = "Anonymous"
+    body:        str
+    created_at:  datetime
+ 
+    model_config = {"from_attributes": True}
+ 
 class CommunityGroupOut(BaseModel):
     id: int
     name: str
@@ -245,7 +258,7 @@ class CommunityGroupOut(BaseModel):
     is_public: bool
     created_at: datetime
     is_member: Optional[bool] = False      # injected in the router
-
+    is_owner: bool = False
     class Config:
         from_attributes = True
 
@@ -321,3 +334,11 @@ class PlaceReviewOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class SafetyReportCreate(BaseModel):
+    description: str
+    location:    Optional[str] = None
+    title:       Optional[str] = None
+    trip_id:     Optional[str] = None   
+
+    

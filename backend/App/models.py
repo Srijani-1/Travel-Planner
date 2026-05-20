@@ -15,9 +15,13 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     ride_bookings = relationship("RideBooking", back_populates="user")
     # Relationships
-    trips = relationship("Trip", back_populates="user")
-    saved_places = relationship("SavedPlace", back_populates="user")
-    reviews = relationship("Review", back_populates="user")
+    trips = relationship("Trip", back_populates="user", cascade="all, delete-orphan")
+
+    saved_places = relationship("SavedPlace", back_populates="user", cascade="all, delete-orphan")
+
+    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
+
+    ride_bookings = relationship("RideBooking", back_populates="user", cascade="all, delete-orphan")
  
  
 class PendingUser(Base):
@@ -37,7 +41,7 @@ class Trip(Base):
     __tablename__ = "trips"
  
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     destination_name = Column(String, nullable=False)
     destination_lat = Column(Float)
     destination_lon = Column(Float)
@@ -167,8 +171,8 @@ class Review(Base):
     __tablename__ = "reviews"
  
     id = Column(Integer, primary_key=True, index=True)
-    trip_id = Column(Integer, ForeignKey("trips.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    trip_id = Column(Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     rating = Column(Integer, nullable=False)  # 1-5
     comment = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -191,6 +195,7 @@ class CommunityGroup(Base):
 
     posts = relationship("CommunityPost", back_populates="group", cascade="all, delete-orphan")
     memberships = relationship("GroupMembership", back_populates="group", cascade="all, delete-orphan")
+    messages = relationship("GroupMessage", back_populates="group", cascade="all, delete-orphan")
 
 
 class GroupMembership(Base):
@@ -255,4 +260,17 @@ class PlaceReview(Base):
     upvotes = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    author = relationship("User")
+
+class GroupMessage(Base):
+    """Chat message inside a CommunityGroup."""
+    __tablename__ = "group_messages"
+ 
+    id         = Column(Integer, primary_key=True, index=True)
+    group_id   = Column(Integer, ForeignKey("community_groups.id", ondelete="CASCADE"), nullable=False)
+    author_id  = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    body       = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+ 
+    group  = relationship("CommunityGroup", back_populates="messages")
     author = relationship("User")
