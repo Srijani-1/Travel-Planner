@@ -15,7 +15,14 @@ async def search_image(
     _: models.User = Depends(get_current_user),
 ):
     if not UNSPLASH_KEY:
-        raise HTTPException(status_code=503, detail="Unsplash key not configured")
+        # Fallback to a generic travel placeholder if no key is configured
+        # This prevents 503 errors on the frontend
+        return {
+            "url": "https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1080&q=80",
+            "thumb": "https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=400&q=80",
+            "author": "Travel Placeholder",
+            "author_link": "https://unsplash.com",
+        }
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(

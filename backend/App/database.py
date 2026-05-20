@@ -22,7 +22,7 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
-print("📦 Using DB:", DB_URL)
+print("Using DB:", DB_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
