@@ -29,7 +29,7 @@ export function PlanTrip() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [preferences, setPreferences] = useState<string[]>([]);
-  const [budget, setBudget] = useState([2000]);
+  const [budget, setBudget] = useState([5000]);
   const [stayType, setStayType] = useState("");
   const [rating, setRating] = useState([3]);
   const [safetyMode, setSafetyMode] = useState(false);
@@ -64,19 +64,12 @@ export function PlanTrip() {
 
   const validateStep = (currentStep: number) => {
     switch (currentStep) {
-      case 1:
-        // isValidDest must be true to proceed
-        return !!destination && !!duration && !!startDate && !!endDate && peopleCount > 0 && isValidDest;
-      case 2:
-        return preferences.length > 0;
-      case 3:
-        return budget[0] > 0;
-      case 4:
-        return !!stayType && accommodationFeatures.length > 0;
-      case 5:
-        return dietary !== "None";
-      default:
-        return true;
+      case 1: return !!destination && !!duration && !!startDate && !!endDate && peopleCount > 0 && isValidDest;
+      case 2: return preferences.length > 0;
+      case 3: return !!stayType && accommodationFeatures.length > 0;
+      case 4: return dietary !== "None";
+      case 5: return budget[0] > 0;
+      default: return true;
     }
   };
 
@@ -426,65 +419,6 @@ export function PlanTrip() {
             className="space-y-6"
           >
             <div>
-              <h2 className="text-2xl font-bold mb-2">What's your budget?</h2>
-              <p className="text-gray-600">Set your budget range for this trip</p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Budget: ₹{budget[0].toLocaleString()}</Label>
-                <Slider
-                  value={budget}
-                  onValueChange={setBudget}
-                  min={5000}
-                  max={200000}
-                  step={1000}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>₹5,000</span>
-                  <span>₹2,00,000</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                {[
-                  { label: "Economy", multiplier: 1500, color: "emerald", desc: "Hostels & Street Food" },
-                  { label: "Standard", multiplier: 4500, color: "blue", desc: "3-4★ Hotels & Cafes" },
-                  { label: "Luxury", multiplier: 12000, color: "purple", desc: "Top Resorts & Fine Dining" },
-                ].map((tier) => {
-                  const est = tier.multiplier * (parseInt(duration) || 1) * peopleCount;
-                  const isActive = Math.abs(budget[0] - est) < 500;
-                  return (
-                    <Card
-                      key={tier.label}
-                      className={`cursor-pointer transition-all hover:scale-105 ${isActive ? `border-${tier.color}-600 border-2 bg-${tier.color}-50/30` : ""
-                        }`}
-                      onClick={() => setBudget([est])}
-                    >
-                      <CardContent className="pt-6 text-center">
-                        <p className={`font-bold text-${tier.color}-600`}>{tier.label}</p>
-                        <p className="text-lg font-black">₹{est.toLocaleString()}</p>
-                        <p className="text-[10px] text-gray-500 mt-1">{tier.desc}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        );
-
-      case 4:
-        return (
-          <motion.div
-            key="step4"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
-          >
-            <div>
               <h2 className="text-2xl font-bold mb-2">Where will you stay?</h2>
               <p className="text-gray-600">Choose your preferred accommodation type</p>
             </div>
@@ -581,10 +515,10 @@ export function PlanTrip() {
           </motion.div>
         );
 
-      case 5:
+      case 4:
         return (
           <motion.div
-            key="step5"
+            key="step4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -620,6 +554,78 @@ export function PlanTrip() {
                 ⚠️ Please select your dietary preference.
               </p>
             )}
+          </motion.div>
+        );
+      case 5:
+        return (
+          <motion.div
+            key="step5"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Finally, what's your budget?</h2>
+              <p className="text-gray-600">
+                Based on your {stayType} preference, {dietary} diet, and {duration}-day trip
+                for {peopleCount} {peopleCount === 1 ? "person" : "people"} — set a total budget.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Budget: ₹{budget[0].toLocaleString()}</Label>
+                <Slider
+                  value={budget}
+                  onValueChange={setBudget}
+                  min={5000}
+                  max={200000}
+                  step={1000}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>₹5,000</span>
+                  <span>₹2,00,000</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mt-6">
+                {[
+                  { label: "Economy", multiplier: 1500, color: "emerald", desc: "Hostels & Street Food" },
+                  { label: "Standard", multiplier: 4500, color: "blue", desc: "3-4★ Hotels & Cafes" },
+                  { label: "Luxury", multiplier: 12000, color: "purple", desc: "Top Resorts & Fine Dining" },
+                ].map((tier) => {
+                  const est = tier.multiplier * (parseInt(duration) || 1) * peopleCount;
+                  const isActive = Math.abs(budget[0] - est) < 500;
+                  return (
+                    <Card
+                      key={tier.label}
+                      className={`cursor-pointer transition-all hover:scale-105 ${isActive ? `border-2` : ""
+                        }`}
+                      onClick={() => setBudget([est])}
+                    >
+                      <CardContent className="pt-6 text-center">
+                        <p className="font-bold">{tier.label}</p>
+                        <p className="text-lg font-black">₹{est.toLocaleString()}</p>
+                        <p className="text-[10px] text-gray-500 mt-1">
+                          ₹{Math.round(est / (parseInt(duration) || 1) / peopleCount).toLocaleString()}/person/day
+                        </p>
+                        <p className="text-[10px] text-gray-400">{tier.desc}</p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              {budget[0] > 0 && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg text-sm">
+                  <p className="font-medium text-blue-800 dark:text-blue-300">
+                    ₹{budget[0].toLocaleString()} total · ₹{Math.round(budget[0] / (parseInt(duration) || 1)).toLocaleString()}/day ·
+                    ₹{Math.round(budget[0] / (parseInt(duration) || 1) / peopleCount).toLocaleString()}/person/day
+                  </p>
+                </div>
+              )}
+            </div>
           </motion.div>
         );
 

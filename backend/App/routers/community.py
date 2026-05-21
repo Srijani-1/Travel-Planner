@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from .. import models
 from ..database import get_db
@@ -20,9 +21,10 @@ router = APIRouter(prefix="/community", tags=["Community"])
 
 def _group_out(group: models.CommunityGroup, user_id: int) -> CommunityGroupOut:
     is_member = any(m.user_id == user_id for m in group.memberships)
+    is_owner = group.created_by == user_id
     data = CommunityGroupOut.model_validate(group)
     data.is_member = is_member
-    data.is_owner = group.created_by == user_id
+    data.is_owner = is_owner
     return data
 
 def _post_out(post: models.CommunityPost) -> CommunityPostOut:
@@ -66,6 +68,7 @@ def create_group(
     group = models.CommunityGroup(**payload.model_dump(), created_by=current_user.id)
     db.add(group)
     db.flush()
+    # Auto-join creator as member
     membership = models.GroupMembership(group_id=group.id, user_id=current_user.id)
     group.member_count = 1
     db.add(membership)
@@ -80,14 +83,13 @@ def delete_group(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Only the group owner can delete a group. Cascades to memberships, posts, and messages."""
     group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
     if not group:
         raise HTTPException(404, "Group not found")
+    # FIX: compare integer IDs explicitly — avoids lazy-load issues
     if group.created_by != current_user.id:
         raise HTTPException(403, "Only the group owner can delete this group")
 
-    # Cascade-delete memberships, messages, and posts that belong to this group
     db.query(models.GroupMembership).filter_by(group_id=group_id).delete()
     db.query(models.GroupMessage).filter_by(group_id=group_id).delete()
     db.query(models.CommunityPost).filter_by(group_id=group_id).delete()
@@ -104,6 +106,10 @@ def join_group(
     group = db.query(models.CommunityGroup).filter_by(id=group_id).first()
     if not group:
         raise HTTPException(404, "Group not found")
+
+    # FIX: owner is always already a member — block re-joining explicitly
+    if group.created_by == current_user.id:
+        raise HTTPException(400, "You created this group and are already a member")
 
     existing = db.query(models.GroupMembership).filter_by(
         group_id=group_id, user_id=current_user.id
@@ -127,7 +133,7 @@ def leave_group(
     if not group:
         raise HTTPException(404, "Group not found")
     if group.created_by == current_user.id:
-        raise HTTPException(400, "Owner cannot leave — transfer ownership or delete the group")
+        raise HTTPException(400, "Owner cannot leave — delete the group instead")
 
     membership = db.query(models.GroupMembership).filter_by(
         group_id=group_id, user_id=current_user.id
@@ -148,11 +154,10 @@ def leave_group(
 def list_messages(
     group_id: int,
     limit: int = Query(50, le=100),
-    before_id: Optional[int] = Query(None, description="Cursor — return messages with id < before_id"),
+    before_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Return paginated chat history for a group. Caller must be a member."""
     membership = db.query(models.GroupMembership).filter_by(
         group_id=group_id, user_id=current_user.id
     ).first()
@@ -163,7 +168,6 @@ def list_messages(
     if before_id:
         q = q.filter(models.GroupMessage.id < before_id)
     messages = q.order_by(models.GroupMessage.id.desc()).limit(limit).all()
-    # Return in ascending order so the UI can append naturally
     return [_message_out(m) for m in reversed(messages)]
 
 
@@ -174,7 +178,6 @@ def send_message(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Send a chat message to a group. Caller must be a member."""
     membership = db.query(models.GroupMembership).filter_by(
         group_id=group_id, user_id=current_user.id
     ).first()
@@ -199,7 +202,6 @@ def delete_message(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Message author or group owner can delete a message."""
     msg = db.query(models.GroupMessage).filter_by(id=message_id, group_id=group_id).first()
     if not msg:
         raise HTTPException(404, "Message not found")
@@ -213,7 +215,7 @@ def delete_message(
     db.commit()
 
 
-# ── Posts / Reports ───────────────────────────────────────────────────────────
+# ── Posts ─────────────────────────────────────────────────────────────────────
 
 @router.get("/posts", response_model=List[CommunityPostOut])
 def list_posts(
@@ -251,13 +253,6 @@ def create_post_from_safety_report(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Bridge endpoint called by the Safety page when a user submits an incident report.
-    Creates a community post with post_type='report' so it appears in the Feed.
-
-    The Safety page still calls its own api.incidents.report() for local authority
-    notification — this endpoint handles the community side only.
-    """
     title = payload.title or f"Safety incident in {payload.location or 'unknown location'}"
     post = models.CommunityPost(
         author_id=current_user.id,
@@ -265,7 +260,7 @@ def create_post_from_safety_report(
         title=title,
         body=payload.description,
         location=payload.location,
-        group_id=None,          # global feed by default
+        group_id=None,
         is_resolved=False,
         upvotes=0,
     )
@@ -311,14 +306,33 @@ def delete_post(
 def upvote_post(
     post_id: int,
     db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     post = db.query(models.CommunityPost).filter_by(id=post_id).first()
     if not post:
         raise HTTPException(404, "Post not found")
-    post.upvotes = (post.upvotes or 0) + 1
-    db.commit()
-    return {"upvotes": post.upvotes}
+
+    # FIX: check for existing upvote — toggle behaviour
+    existing = db.query(models.PostUpvote).filter_by(
+        post_id=post_id, user_id=current_user.id
+    ).first()
+
+    if existing:
+        # Already upvoted — remove it (toggle off)
+        db.delete(existing)
+        post.upvotes = max(0, (post.upvotes or 0) - 1)
+        db.commit()
+        return {"upvotes": post.upvotes, "action": "removed"}
+
+    try:
+        db.add(models.PostUpvote(post_id=post_id, user_id=current_user.id))
+        post.upvotes = (post.upvotes or 0) + 1
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(400, "Already upvoted")
+
+    return {"upvotes": post.upvotes, "action": "added"}
 
 
 # ── Comments ──────────────────────────────────────────────────────────────────
@@ -398,14 +412,32 @@ def create_review(
 def upvote_review(
     review_id: int,
     db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     review = db.query(models.PlaceReview).filter_by(id=review_id).first()
     if not review:
         raise HTTPException(404, "Review not found")
-    review.upvotes = (review.upvotes or 0) + 1
-    db.commit()
-    return {"upvotes": review.upvotes}
+
+    # FIX: same toggle pattern as post upvotes
+    existing = db.query(models.ReviewUpvote).filter_by(
+        review_id=review_id, user_id=current_user.id
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        review.upvotes = max(0, (review.upvotes or 0) - 1)
+        db.commit()
+        return {"upvotes": review.upvotes, "action": "removed"}
+
+    try:
+        db.add(models.ReviewUpvote(review_id=review_id, user_id=current_user.id))
+        review.upvotes = (review.upvotes or 0) + 1
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(400, "Already upvoted")
+
+    return {"upvotes": review.upvotes, "action": "added"}
 
 
 @router.delete("/reviews/{review_id}", status_code=204)
