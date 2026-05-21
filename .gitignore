@@ -26,3 +26,9 @@ dist-ssr
 backend/*.db
 backend/App/__pycache__/*
 __pycache__/*
+backend/App/ai/__pycache__/*
+backend/App/ai/__pycache__
+backend/App/routers/__pycache__/*
+backend/App/routers/__pycache__
+backend/App/core/__pycache__/*
+backend/App/core/__pycache__

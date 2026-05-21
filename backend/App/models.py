@@ -57,6 +57,7 @@ class Trip(Base):
     accommodation_prefs = Column(JSON) # e.g. ["Sea-side view", "Pool"]
     dietary_pref = Column(String) # e.g. "Veg", "Non-Veg", "Vegan"
     safety_score = Column(Integer)
+    people_count = Column(Integer, default=1)
     status = Column(String, default="planned") # planned | next | completed
  
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -274,3 +275,31 @@ class GroupMessage(Base):
  
     group  = relationship("CommunityGroup", back_populates="messages")
     author = relationship("User")
+
+class PostUpvote(Base):
+    """Tracks which user upvoted which post — prevents duplicate upvotes."""
+    __tablename__ = "post_upvotes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("community_posts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        # Composite unique constraint — one upvote per user per post
+        __import__("sqlalchemy").UniqueConstraint("post_id", "user_id", name="uq_post_upvote"),
+    )
+
+
+class ReviewUpvote(Base):
+    """Tracks which user upvoted which place review — prevents duplicate upvotes."""
+    __tablename__ = "review_upvotes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    review_id = Column(Integer, ForeignKey("place_reviews.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        __import__("sqlalchemy").UniqueConstraint("review_id", "user_id", name="uq_review_upvote"),
+    )

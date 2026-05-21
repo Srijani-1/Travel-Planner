@@ -289,6 +289,24 @@ export function Community() {
     const [newGroup, setNewGroup] = useState({ name: "", description: "", category: "general" });
     const [savingGroup, setSavingGroup] = useState(false);
 
+    const upvotePost = async (id: number) => {
+        const res = await post(`/community/posts/${id}/upvote`, {});
+        if (res?.action === "removed") {
+            setPosts(prev => prev.map(p => p.id === id ? { ...p, upvotes: p.upvotes - 1 } : p));
+        } else {
+            setPosts(prev => prev.map(p => p.id === id ? { ...p, upvotes: p.upvotes + 1 } : p));
+        }
+    };
+
+    const upvoteReview = async (id: number) => {
+        const res = await post(`/community/reviews/${id}/upvote`, {});
+        if (res?.action === "removed") {
+            setReviews(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes - 1 } : r));
+        } else {
+            setReviews(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r));
+        }
+    };
+
     // Load
     const loadAll = async () => {
         setLoading(true);
@@ -308,7 +326,7 @@ export function Community() {
     useEffect(() => {
         loadAll();
         // Fetch current user id from token
-        get("/users/me").then(u => { if (u?.id) setCurrentUserId(u.id); }).catch(() => { });
+        get("/me").then(u => { if (u?.id) setCurrentUserId(u.id); }).catch(() => { });
     }, []);
 
     // Join / leave
@@ -384,14 +402,14 @@ export function Community() {
         finally { setSavingGroup(false); }
     };
 
-    const upvotePost = async (id: number) => {
-        await post(`/community/posts/${id}/upvote`, {});
-        setPosts(prev => prev.map(p => p.id === id ? { ...p, upvotes: p.upvotes + 1 } : p));
-    };
-    const upvoteReview = async (id: number) => {
-        await post(`/community/reviews/${id}/upvote`, {});
-        setReviews(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r));
-    };
+    // const upvotePost = async (id: number) => {
+    //     await post(`/community/posts/${id}/upvote`, {});
+    //     setPosts(prev => prev.map(p => p.id === id ? { ...p, upvotes: p.upvotes + 1 } : p));
+    // };
+    // const upvoteReview = async (id: number) => {
+    //     await post(`/community/reviews/${id}/upvote`, {});
+    //     setReviews(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r));
+    // };
 
     const filteredPosts = posts.filter(p => {
         const matchType = postTypeFilter === "all" || p.post_type === postTypeFilter;

@@ -34,6 +34,8 @@ class TripBase(BaseModel):
     start_date: datetime
     end_date: datetime
     budget: Optional[int] = None
+    people_count: Optional[int] = 1
+    rating_min: Optional[int] = 3 
     travel_style: Optional[str] = None  # Solo, Friends, Family
     preferences: Optional[List[str]] = []
     stay_type: Optional[str] = None
@@ -257,6 +259,7 @@ class CommunityGroupOut(BaseModel):
     member_count: int
     is_public: bool
     created_at: datetime
+    created_by: Optional[int] = None 
     is_member: Optional[bool] = False      # injected in the router
     is_owner: bool = False
     class Config:
