@@ -1,55 +1,44 @@
-import aiosmtplib
+import sib_api_v3_sdk
+from sib_api_v3_sdk.configuration import Configuration
+from sib_api_v3_sdk.api.transactional_emails_api import TransactionalEmailsApi
+from sib_api_v3_sdk.models.send_smtp_email import SendSmtpEmail
 import random, string, os
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GMAIL_USER = os.getenv("GMAIL_USER")
-GMAIL_APP_PASS = os.getenv("GMAIL_APP_PASS")
+config = Configuration()
+config.api_key["api-key"] = os.getenv("BREVO_API_KEY")
+SENDER = {"name": os.getenv("SENDER_NAME", "Explorger"), "email": os.getenv("SENDER_EMAIL")}
 
 def generate_otp() -> str:
     return "".join(random.choices(string.digits, k=6))
 
-async def _send_email(to: str, subject: str, html: str, text: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"Explorger <{GMAIL_USER}>"
-    msg["To"] = to
-    msg.attach(MIMEText(text, "plain"))
-    msg.attach(MIMEText(html, "html"))
-
-    await aiosmtplib.send(
-        msg,
-        hostname="smtp.gmail.com",
-        port=587,
-        start_tls=True,
-        username=GMAIL_USER,
-        password=GMAIL_APP_PASS,
-    )
-
 async def send_otp_email(email: str, otp: str, full_name: str):
     print(f"[OTP] {email} → {otp}", flush=True)
     try:
-        await _send_email(
-            to=email,
+        api = TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(config))
+        api.send_transac_email(SendSmtpEmail(
+            to=[{"email": email, "name": full_name}],
+            sender=SENDER,
             subject="Your Explorger verification code",
-            html=f"<p>Hi {full_name}, your code is <strong>{otp}</strong>. Expires in 10 minutes.</p>",
-            text=f"Hi {full_name}, your code is: {otp}. Expires in 10 minutes.",
-        )
+            html_content=f"<p>Hi {full_name}, your code is <strong>{otp}</strong>. Expires in 10 minutes.</p>",
+            text_content=f"Hi {full_name}, your code is: {otp}. Expires in 10 minutes.",
+        ))
         print(f"[EMAIL] Sent to {email}", flush=True)
     except Exception as e:
         print(f"[EMAIL ERROR] {e}", flush=True)
 
 async def send_welcome_email(email: str, full_name: str):
     try:
-        await _send_email(
-            to=email,
+        api = TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(config))
+        api.send_transac_email(SendSmtpEmail(
+            to=[{"email": email, "name": full_name}],
+            sender=SENDER,
             subject="Welcome to Explorger!",
-            html=f"<p>Welcome {full_name}! Your account is verified.</p>",
-            text=f"Welcome {full_name}! Your account is verified.",
-        )
+            html_content=f"<p>Welcome {full_name}! Your account is verified.</p>",
+            text_content=f"Welcome {full_name}! Your account is verified.",
+        ))
         print(f"[WELCOME EMAIL] Sent to {email}", flush=True)
     except Exception as e:
         print(f"[WELCOME EMAIL ERROR] {e}", flush=True)
