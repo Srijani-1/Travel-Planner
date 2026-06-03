@@ -192,7 +192,7 @@ export function RegisterPage() {
                 <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
                   <Map className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-slate-900 dark:text-white font-semibold text-lg">Travel AI</span>
+                <span className="text-slate-900 dark:text-white font-semibold text-lg">Explorger</span>
               </div>
 
               <h1>Create account</h1>

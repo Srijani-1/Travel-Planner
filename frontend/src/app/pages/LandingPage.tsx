@@ -64,7 +64,7 @@ export function LandingPage() {
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                 <Map className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-semibold">Travel AI</span>
+              <span className="text-xl font-semibold">Explorger</span>
             </div>
             <div className="flex gap-4 sm:gap-6 lg:gap-8 items-center">
               <Button
@@ -177,7 +177,7 @@ export function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center mb-20">
               <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 text-foreground tracking-tight">
-                Why Choose Travel AI?
+                Why Choose Explorger?
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Intelligent features that make trip planning effortless, personalized, and secure.
@@ -309,7 +309,7 @@ export function LandingPage() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Map className="h-6 w-6" />
-                  <span className="font-semibold">Travel AI</span>
+                  <span className="font-semibold">Explorger</span>
                 </div>
                 <p className="text-gray-400">
                   Your AI-powered travel companion for unforgettable journeys.
@@ -341,7 +341,7 @@ export function LandingPage() {
               </div>
             </div>
             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2026 Travel AI. All rights reserved.</p>
+              <p>&copy; 2026 Explorger. All rights reserved.</p>
             </div>
           </div>
         </footer>

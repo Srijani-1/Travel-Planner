@@ -66,7 +66,7 @@ export function DashboardLayout() {
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <Map className="h-5 w-5 text-white" />
           </div>
-          <span className="font-bold tracking-tight text-foreground">Travel AI</span>
+          <span className="font-bold tracking-tight text-foreground">Explorger</span>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -91,7 +91,7 @@ export function DashboardLayout() {
               <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <Map className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-extrabold tracking-tight text-foreground">Travel AI</span>
+              <span className="text-lg font-extrabold tracking-tight text-foreground">Explorger</span>
             </div>
 
             {/* ── Theme toggle (desktop) ── */}
