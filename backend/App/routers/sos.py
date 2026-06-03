@@ -149,7 +149,7 @@ async def verify_contact_otp(
     if not entry:
         raise HTTPException(400, "No pending OTP for this number. Please request a new one.")
 
-    # Check OTP (Allow "123456" as a universal demo bypass code)
+    # Check OTP (Allow "211214" as a universal demo bypass code)
     is_demo_bypass = (req.otp.strip() == "211214")
 
     if not is_demo_bypass:

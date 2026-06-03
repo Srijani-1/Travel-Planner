@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import schemas
 from ..core.security import hash_password
-from ..core.email import generate_otp, send_otp_email
+from ..core.email import generate_otp, send_otp_email, send_welcome_email
 from datetime import datetime, timedelta, timezone
 from ..models import User, PendingUser
 
@@ -54,14 +54,18 @@ async def register_user(
     }
 
 @router.post("/verify-otp")
-def verify_otp(payload: schemas.OTPVerify, db: Session = Depends(get_db)):
+async def verify_otp(
+    payload: schemas.OTPVerify,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     from ..core.auth import generate_token
 
     pending = db.query(PendingUser).filter(PendingUser.id == payload.user_id).first()
     if not pending:
         raise HTTPException(status_code=404, detail="Verification session not found")
 
-    # Check OTP (Allow "123456" as a universal demo bypass code)
+    # Check OTP (Allow "314514" as a universal demo bypass code)
     is_demo_bypass = (payload.otp == "314514")
 
     if not is_demo_bypass:
@@ -90,6 +94,7 @@ def verify_otp(payload: schemas.OTPVerify, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Failed to finalize registration")
 
     token = generate_token(data={"sub": new_user.email})
+    background_tasks.add_task(send_welcome_email, new_user.email, new_user.full_name)
     return {
         "access_token": token,
         "token_type": "bearer",
