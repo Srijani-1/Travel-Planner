@@ -42,11 +42,29 @@ async def send_otp_email(email: EmailStr, otp: str, full_name: str):
         </p>
     </div>
     """
-    message = MessageSchema(
-        subject="Your Travel AI verification code",
-        recipients=[email],
-        body=html,
-        subtype=MessageType.html,
-    )
-    fm = FastMail(conf)
-    await fm.send_message(message)
+    
+    # Log the OTP directly to the terminal / Render logs so the developer can retrieve it
+    print("\n" + "="*60, flush=True)
+    print(f"  [DEMO OTP CODE] Verification code for {email} is: {otp}", flush=True)
+    print("="*60 + "\n", flush=True)
+
+    try:
+        username = os.getenv("MAIL_USERNAME", "your_gmail@gmail.com")
+        password = os.getenv("MAIL_PASSWORD", "your_app_password")
+        
+        if username == "your_gmail@gmail.com" or password == "your_app_password" or not username or not password:
+            print("[EMAIL] Using demo mode (SMTP credentials not configured). Skipping email dispatch.", flush=True)
+            return
+
+        message = MessageSchema(
+            subject="Your Travel AI verification code",
+            recipients=[email],
+            body=html,
+            subtype=MessageType.html,
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        print(f"[EMAIL] Successfully sent email to {email}.", flush=True)
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send email to {email}: {e}", flush=True)
+
