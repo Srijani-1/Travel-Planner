@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Map, Utensils, Wallet, Shield, Sparkles, Calendar } from "lucide-react";
+import { Map, Utensils, Wallet, Shield, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import { ImageWithFallback } from "../components/ImageWithFallback";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -56,7 +56,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 dark:to-primary/10">
-      {/* Sticky Navbar — sits above the scroll-expand hero */}
+      {/* Sticky Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 dark:bg-card/90 backdrop-blur-lg border-b">
         <div className="w-full mx-auto px-4 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-16">
@@ -79,14 +79,6 @@ export function LandingPage() {
         </div>
       </nav>
 
-      {/* ─── Scroll-Expand Hero ──────────────────────────────────────────── */}
-      {/*
-        The hero uses a scenic travel image as the background.
-        The expanding "card" shows another dramatic travel photo.
-        Title splits apart as the card grows: "Plan" flies left, "Your Perfect Trip" flies right.
-        Scroll hint nudges the user to interact.
-        All the page content below is revealed once the card is fully expanded.
-      */}
       <ScrollExpandMedia
         mediaType="image"
         mediaSrc="https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1280&auto=format&fit=crop&q=80"
@@ -94,11 +86,8 @@ export function LandingPage() {
         title="Plan Your Perfect Trip"
         date="✈ AI-Powered Travel"
         scrollToExpand="Scroll to explore ↓"
-      //textBlend
       >
-        {/* ── Everything below here is the rest of the landing page ── */}
-
-        {/* CTA Strip — shown right after hero expands */}
+        {/* CTA Strip */}
         <section className="relative overflow-hidden bg-white dark:bg-zinc-950 py-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px] pointer-events-none mix-blend-screen" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px] pointer-events-none mix-blend-screen" />
@@ -134,7 +123,19 @@ export function LandingPage() {
                   >
                     Start Planning
                   </Button>
-
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() =>
+                      window.open(
+                        "https://app.guidde.com/share/playbooks/eCRdr1EWZAFRyFbHa9rtbz?origin=YDI3WlsDrucKItWC4uA3o8zbM2r1&mode=videoOnly",
+                        "_blank"
+                      )
+                    }
+                    className="text-lg px-8 h-14 border-2 hover:bg-white/10 transition-all hover:scale-105"
+                  >
+                    ▶ Watch Demo
+                  </Button>
                 </div>
               </motion.div>
 
@@ -153,19 +154,6 @@ export function LandingPage() {
                     className="w-full h-[500px] object-cover"
                   />
                 </div>
-                {/* <motion.div
-                  animate={{ y: [-8, 8, -8] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="absolute -bottom-8 -right-8 bg-white/90 dark:bg-card/90 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/10 p-5 flex items-center gap-4 z-20 border border-white/20 dark:border-white/10"
-                >
-                  <div className="h-14 w-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center border border-blue-200 dark:border-blue-800">
-                    <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-2xl text-foreground">1,247+</div>
-                    <div className="text-sm text-muted-foreground font-medium">Trips Planned</div>
-                  </div>
-                </motion.div> */}
               </motion.div>
             </div>
           </div>
@@ -212,7 +200,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Demo Preview Section */}
+        {/* Trending Destinations Section */}
         <section className="py-32 relative overflow-hidden bg-white dark:bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center mb-20 max-w-3xl mx-auto">
