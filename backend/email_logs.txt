@@ -1,0 +1,14 @@
+[2026-06-03T11:30:46.769293] send_otp_email invoked for srijanipalc+test1@gmail.com with OTP=784730, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:30:46.839861] send_otp_email invoked for srijanipalc@gmail.com with OTP=373257, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:30:51.316421] [EMAIL] Successfully sent email to srijanipalc@gmail.com.
+[2026-06-03T11:30:51.578993] [EMAIL] Successfully sent email to srijanipalc+test1@gmail.com.
+[2026-06-03T11:37:22.395769] send_otp_email invoked for srijanipalc@gmail.com with OTP=363004, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:37:27.032537] [EMAIL] Successfully sent email to srijanipalc@gmail.com.
+[2026-06-03T11:41:28.959608] send_otp_email invoked for srijanipalc@gmail.com with OTP=916077, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:41:31.600669] send_otp_email invoked for srijanipalc@gmail.com with OTP=654711, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:41:33.261516] [EMAIL] Sent OTP email to srijanipalc@gmail.com.
+[2026-06-03T11:41:35.879202] [EMAIL] Sent OTP email to srijanipalc@gmail.com.
+[2026-06-03T11:43:13.081751] send_otp_email invoked for srijanipalc@gmail.com with OTP=828852, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:43:17.567715] [EMAIL] Successfully sent email to srijanipalc@gmail.com.
+[2026-06-03T11:48:46.992502] send_otp_email invoked for srijanipalc@gmail.com with OTP=457172, full_name=Srijani Pal Chaudhuri
+[2026-06-03T11:48:50.944139] [EMAIL] Successfully sent email to srijanipalc@gmail.com.
